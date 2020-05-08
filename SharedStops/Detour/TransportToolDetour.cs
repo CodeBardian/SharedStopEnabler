@@ -10,6 +10,9 @@ namespace AdvancedStopSelection.Detour
     [TargetType(typeof(TransportTool))]
     public class TransportToolDetour : TransportTool
     {
+        private bool additionalStopsSet = false;
+        private bool additionalStopsRemoved = true;
+
         [RedirectMethod]
         private bool GetStopPosition(TransportInfo info, ushort segment, ushort building, ushort firstStop, ref Vector3 hitPos, out bool fixedPlatform)
         {
@@ -92,6 +95,13 @@ namespace AdvancedStopSelection.Detour
             //    fixedPlatform = true;
             //    return true;
             //}
+
+            if ((int)this.m_line != 0)
+            {
+                firstStop = instance3.m_lines.m_buffer[(int)this.m_line].m_stops;
+                Debug.Log($"SharedStops found line: {m_line}, LineNumber: {instance3.m_lines.m_buffer[(int)this.m_line].m_lineNumber}, Flags: {instance3.m_lines.m_buffer[(int)this.m_line].m_flags}");
+            }
+
             if ((int)segment != 0) //hover segment
             {
                 //var mask = ~(NetSegment.Flags.StopLeft2 | NetSegment.Flags.StopRight2);
@@ -117,7 +127,38 @@ namespace AdvancedStopSelection.Detour
                 uint laneID1;
                 int laneIndex1;
                 float laneOffset1;
-                Debug.Log($"SharedStops hover Segment: {segment}, Building: {building}, hitpos. {hitPos.x} {hitPos.y} {hitPos.z}, vehicleType: {info.m_vehicleType}");
+
+                if ((int)segment != 0 && alternateMode && !additionalStopsSet)  //set stoptype
+                {
+                    additionalStopsSet = true;
+                    additionalStopsRemoved = false;
+                    Debug.Log($"SharedStops calculate new stoptypes: {segment}, Stopflag: {info.m_stopFlag}, hitpos. {hitPos.x} {hitPos.y} {hitPos.z}, vehicleType: {info.m_vehicleType}");
+                    for (int i = 1; i < instance1.m_segments.m_buffer[(int)segment].Info.m_lanes.Length - 2; i++) // -2 ?
+                    {
+                        uint index = (uint)instance1.m_segments.m_buffer[(int)segment].Info.m_sortedLanes[i];
+                        if (instance1.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_vehicleType == VehicleInfo.VehicleType.None)
+                        {
+                            instance1.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_stopType |= info.m_vehicleType;
+                        }
+                    }
+                }
+                if ((int)segment != 0 && !alternateMode && !additionalStopsRemoved)  //remove stoptypes
+                {
+                    additionalStopsRemoved = true;
+                    additionalStopsSet = false;
+                    Debug.Log($"SharedStops remove new stoptypes: {segment}, Stopflag: {info.m_stopFlag}, hitpos. {hitPos.x} {hitPos.y} {hitPos.z}, vehicleType: {info.m_vehicleType}");
+                    //for (int i = 1; i < instance1.m_segments.m_buffer[(int)segment].Info.m_lanes.Length - 2; i++) // -2 ?
+                    //{
+                    //    uint index = (uint)instance1.m_segments.m_buffer[(int)segment].Info.m_sortedLanes[i];
+                    //    instance1.m_segments.m_buffer[(int)segment].GetClosestLanePosition(hitPos, NetInfo.LaneType.Pedestrian, VehicleInfo.VehicleType.None, info.m_vehicleType, out closestPedestrianLane, out laneID1, out laneIndex1, out laneOffset1);
+                    //    if (((NetLane.Flags)instance1.m_lanes.m_buffer[laneID1].m_flags & NetLane.Flags.Stop) != NetLane.Flags.None) continue;
+                    //    if ((instance1.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_stopType & info.m_vehicleType) == info.m_vehicleType)
+                    //    {
+                    //        instance1.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_stopType &= ~info.m_vehicleType;
+                    //    }
+                    //}
+                }
+
                 if ((int)segment != 0 && instance1.m_segments.m_buffer[(int)segment].GetClosestLanePosition(hitPos, NetInfo.LaneType.Pedestrian, VehicleInfo.VehicleType.None, info.m_vehicleType, out closestPedestrianLane, out laneID1, out laneIndex1, out laneOffset1))
                 {
                     if (info.m_vehicleType == VehicleInfo.VehicleType.None) //when does this happen? 
@@ -144,6 +185,7 @@ namespace AdvancedStopSelection.Detour
                     float laneOffset2;
                     if (instance1.m_segments.m_buffer[(int)segment].GetClosestLanePosition(closestPedestrianLane, NetInfo.LaneType.Vehicle | NetInfo.LaneType.TransportVehicle, info.m_vehicleType, out position2, out laneID2, out laneIndex2, out laneOffset2))
                     {
+                        Debug.Log($"SharedStops hover Segment: {segment}, Building: {building}, NetFlags: {instance1.m_lanes.m_buffer[laneID1].m_flags}, vehicleType: {info.m_vehicleType}");
                         //NetLane.Flags flags = (NetLane.Flags)((int)instance1.m_lanes.m_buffer[laneID1].m_flags & 768);
                         //if (flags != NetLane.Flags.None && info.m_stopFlag != NetLane.Flags.None && flags != info.m_stopFlag)
                         //    return true;
@@ -152,7 +194,7 @@ namespace AdvancedStopSelection.Detour
                         //    stopOffset = -stopOffset;
                         Vector3 direction;
                         instance1.m_lanes.m_buffer[laneID2].CalculateStopPositionAndDirection(0.5019608f, stopOffset, out hitPos, out direction);
-                        fixedPlatform = false;
+                        fixedPlatform = true; //true or false_? true better for now
                         return true;
                     }
                 }

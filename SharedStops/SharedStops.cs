@@ -14,4 +14,4 @@ namespace AdvancedStopSelection
     }
 }
 
-//TODO: bus stops on tram stops/ bus stops on left 
+//TODO: bus stops on tram stops/ bus stops on lefts

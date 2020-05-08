@@ -42,8 +42,7 @@ namespace AdvancedStopSelection
 
                 for (int i = 1; i < network.m_sortedLanes.Length - 1; i++)
                 {
-                    if (network.m_lanes[network.m_sortedLanes[i]].m_stopType !=
-                        VehicleInfo.VehicleType.None)
+                    if (network.m_lanes[network.m_sortedLanes[i]].m_stopType != VehicleInfo.VehicleType.None)
                     {
                         middleStopType = network.m_lanes[network.m_sortedLanes[i]].m_stopType;
                         break;
@@ -70,7 +69,7 @@ namespace AdvancedStopSelection
         private static void EnableStops(NetInfo info, VehicleInfo.VehicleType firstStopType, VehicleInfo.VehicleType middleStopType, VehicleInfo.VehicleType secondStopType)
         {
             if (info == null) return;
-            for (int i = 1; i < info.m_sortedLanes.Length - 1; i++)
+            for (int i = 1; i < info.m_sortedLanes.Length - 1; i++) // -2 ?
             {
                 if (info.m_lanes[info.m_sortedLanes[i]].m_vehicleType == VehicleInfo.VehicleType.None)
                 {

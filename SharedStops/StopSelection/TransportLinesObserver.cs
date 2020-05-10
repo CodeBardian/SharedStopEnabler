@@ -50,7 +50,7 @@ namespace AdvancedStopSelection.StopSelection
                         Debug.Log($"Added transport line {lineID} flags {transportLine.m_flags}");
                         Debug.Log($"Avoid same stop {transportLine.Info.m_avoidSameStopPlatform}");
 
-                        transportLine.Info.m_avoidSameStopPlatform = false;
+                        //transportLine.Info.m_avoidSameStopPlatform = false;  ???
                         Debug.Log($"Avoid same stop {transportLine.Info.m_avoidSameStopPlatform}");
                         //NewTransportLine(lineID, transportLine);
                     }

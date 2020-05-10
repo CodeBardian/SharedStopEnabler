@@ -13,5 +13,3 @@ namespace AdvancedStopSelection
         public string Description => "Shared Public Transport Stops for buses and trams + advanced stop selection for trains and metros (shift-click)";
     }
 }
-
-//TODO: bus stops on tram stops/ bus stops on lefts

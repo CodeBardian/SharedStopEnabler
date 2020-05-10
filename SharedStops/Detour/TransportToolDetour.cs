@@ -16,109 +16,25 @@ namespace AdvancedStopSelection.Detour
         [RedirectMethod]
         private bool GetStopPosition(TransportInfo info, ushort segment, ushort building, ushort firstStop, ref Vector3 hitPos, out bool fixedPlatform)
         {
-            //begin mod(+): detect key
             bool alternateMode = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
-            //end mod
 
-            Debug.Log($"SharedStops called GetStopPosition {info}, {segment}, {building}, {firstStop}, {info.m_transportType}");
+            NetManager netManager = Singleton<NetManager>.instance;
+            BuildingManager buildingManager = Singleton<BuildingManager>.instance;
 
-            NetManager instance1 = Singleton<NetManager>.instance;
-            BuildingManager instance2 = Singleton<BuildingManager>.instance;
-            TransportManager instance3 = Singleton<TransportManager>.instance;
             fixedPlatform = false;
-            //if (info.m_transportType == TransportInfo.TransportType.Pedestrian)
-            //{
-            //    Debug.Log($"DO YOU SEE ME???");
-            //    Vector3 position = Vector3.zero;
-            //    float laneOffset = 0.0f;
-            //    uint laneID = 0;
-            //    int laneIndex;
-            //    if ((int)segment != 0 && !instance1.m_segments.m_buffer[(int)segment].GetClosestLanePosition(hitPos, NetInfo.LaneType.Pedestrian, VehicleInfo.VehicleType.None, VehicleInfo.VehicleType.None, out position, out laneID, out laneIndex, out laneOffset))
-            //    {
-            //        laneID = 0U;
-            //        if ((instance1.m_segments.m_buffer[(int)segment].m_flags & NetSegment.Flags.Untouchable) != NetSegment.Flags.None && (int)building == 0)
-            //            building = NetSegment.FindOwnerBuilding(segment, 363f);
-            //    }
-            //    if ((int)building != 0)
-            //    {
-            //        if (instance2.m_buildings.m_buffer[(int)building].Info.m_hasPedestrianPaths)
-            //            laneID = instance2.m_buildings.m_buffer[(int)building].FindLane(NetInfo.LaneType.Pedestrian, VehicleInfo.VehicleType.None, hitPos, out position, out laneOffset);
-            //        if ((int)laneID == 0)
-            //        {
-            //            Vector3 sidewalkPosition = instance2.m_buildings.m_buffer[(int)building].CalculateSidewalkPosition();
-            //            laneID = instance2.m_buildings.m_buffer[(int)building].FindAccessLane(NetInfo.LaneType.Pedestrian, VehicleInfo.VehicleType.None, sidewalkPosition, out position, out laneOffset);
-            //        }
-            //    }
-            //    Debug.Log($"SharedStops laneID == {laneID}, Stopflag: {info.m_stopFlag}, TransportType: {info.m_transportType}");
-            //    if ((int)laneID == 0)
-            //    {
-            //        return false;
-            //    }
-
-            //    if ((double)laneOffset < 0.00392156885936856)
-            //    {
-            //        laneOffset = 0.003921569f;
-            //        position = instance1.m_lanes.m_buffer[laneID].CalculatePosition(laneOffset);
-            //    }
-            //    else if ((double)laneOffset > 0.996078431606293)
-            //    {
-            //        laneOffset = 0.9960784f;
-            //        position = instance1.m_lanes.m_buffer[laneID].CalculatePosition(laneOffset);
-            //    }
-            //    if ((int)this.m_line != 0)
-            //    {
-            //        firstStop = instance3.m_lines.m_buffer[(int)this.m_line].m_stops;
-            //        ushort stop = firstStop;
-            //        int num = 0;
-            //        while ((int)stop != 0)
-            //        {
-            //            if ((int)instance1.m_nodes.m_buffer[(int)stop].m_lane == (int)laneID)
-            //            {
-            //                hitPos = instance1.m_nodes.m_buffer[(int)stop].m_position;
-            //                fixedPlatform = true;
-            //                return true;
-            //            }
-            //            stop = TransportLine.GetNextStop(stop);
-            //            if ((int)stop != (int)firstStop)
-            //            {
-            //                if (++num >= 32768)
-            //                {
-            //                    CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
-            //                    break;
-            //                }
-            //            }
-            //            else
-            //                break;
-            //        }
-            //    }
-            //    hitPos = position;
-            //    fixedPlatform = true;
-            //    return true;
-            //}
-
-            if ((int)this.m_line != 0)
-            {
-                firstStop = instance3.m_lines.m_buffer[(int)this.m_line].m_stops;
-                Debug.Log($"SharedStops found line: {m_line}, LineNumber: {instance3.m_lines.m_buffer[(int)this.m_line].m_lineNumber}, Flags: {instance3.m_lines.m_buffer[(int)this.m_line].m_flags}");
-            }
 
             if ((int)segment != 0) //hover segment
             {
-                //var mask = ~(NetSegment.Flags.StopLeft2 | NetSegment.Flags.StopRight2);
-                //instance1.m_segments.m_buffer[(int)segment].m_flags = instance1.m_segments.m_buffer[(int)segment].m_flags & mask;
-                //Debug.Log($"SharedStops hover Segment: {segment}, TransportType: {info.m_transportType}, Flags: {instance1.m_segments.m_buffer[(int)segment].m_flags}");
-                if ((instance1.m_segments.m_buffer[(int)segment].m_flags & NetSegment.Flags.Untouchable) != NetSegment.Flags.None)  //rewrite hasflags extension method
+                if ((netManager.m_segments.m_buffer[(int)segment].m_flags & NetSegment.Flags.Untouchable) != NetSegment.Flags.None)  //rewrite hasflags extension method
                 {
                     building = NetSegment.FindOwnerBuilding(segment, 363f);
                     if ((int)building != 0)  //found nearby building
                     {
-                        BuildingInfo info1 = instance2.m_buildings.m_buffer[(int)building].Info;
+                        BuildingInfo info1 = buildingManager.m_buildings.m_buffer[(int)building].Info;
                         TransportInfo transportLineInfo1 = info1.m_buildingAI.GetTransportLineInfo();
                         TransportInfo transportLineInfo2 = info1.m_buildingAI.GetSecondaryTransportLineInfo();
-                        //check for existing transport? if will never be true?
-                        //Debug.Log($"SharedStops found building: {building}, TP: {info.m_transportType}, TLTP1: {(transportLineInfo1 == null ? transportLineInfo1?.m_transportType : TransportInfo.TransportType.HotAirBalloon)} TLTP2: {(transportLineInfo2 == null ? transportLineInfo2?.m_transportType : TransportInfo.TransportType.HotAirBalloon)}");
                         if (!alternateMode && transportLineInfo1 != null && transportLineInfo1.m_transportType == info.m_transportType || !alternateMode && transportLineInfo2 != null && transportLineInfo2.m_transportType == info.m_transportType)
-                            segment = (ushort)0; //METRO stop results in segment = 0
+                            segment = (ushort)0; //metro stop results in segment = 0
                         else
                             building = (ushort)0;
                     }
@@ -127,99 +43,98 @@ namespace AdvancedStopSelection.Detour
                 uint laneID1;
                 int laneIndex1;
                 float laneOffset1;
-
-                if ((int)segment != 0 && alternateMode && !additionalStopsSet)  //set stoptype
+                                
+                if ((int)segment != 0 && alternateMode && !additionalStopsSet)  //set additional stoptypes
                 {
-                    additionalStopsSet = true;
-                    additionalStopsRemoved = false;
-                    Debug.Log($"SharedStops calculate new stoptypes: {segment}, Stopflag: {info.m_stopFlag}, hitpos. {hitPos.x} {hitPos.y} {hitPos.z}, vehicleType: {info.m_vehicleType}");
-                    for (int i = 1; i < instance1.m_segments.m_buffer[(int)segment].Info.m_lanes.Length - 2; i++) // -2 ?
+                    for (int i = 1; i < netManager.m_segments.m_buffer[(int)segment].Info.m_lanes.Length - 2; i++)
                     {
-                        uint index = (uint)instance1.m_segments.m_buffer[(int)segment].Info.m_sortedLanes[i];
-                        if (instance1.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_vehicleType == VehicleInfo.VehicleType.None)
+                        uint index = (uint)netManager.m_segments.m_buffer[(int)segment].Info.m_sortedLanes[i];
+                        if ((netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_vehicleType == VehicleInfo.VehicleType.None) && (netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_stopType != info.m_vehicleType))  // TODO: change to not FlagSet
                         {
-                            instance1.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_stopType |= info.m_vehicleType;
+                            Debug.Log($"SharedStops calculate new stoptypes: {segment}, Stopflag: {info.m_stopFlag}, hitpos. {hitPos.x} {hitPos.y} {hitPos.z}, vehicleType: {info.m_vehicleType}");
+                            netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_stopType |= info.m_vehicleType;
+                            additionalStopsSet = true;
+                            additionalStopsRemoved = false;
                         }
                     }
                 }
-                if ((int)segment != 0 && !alternateMode && !additionalStopsRemoved)  //remove stoptypes
+                if ((int)segment != 0 && !alternateMode && !additionalStopsRemoved)  //remove additional stoptypes
                 {
                     additionalStopsRemoved = true;
                     additionalStopsSet = false;
-                    Debug.Log($"SharedStops remove new stoptypes: {segment}, Stopflag: {info.m_stopFlag}, hitpos. {hitPos.x} {hitPos.y} {hitPos.z}, vehicleType: {info.m_vehicleType}");
-                    //for (int i = 1; i < instance1.m_segments.m_buffer[(int)segment].Info.m_lanes.Length - 2; i++) // -2 ?
-                    //{
-                    //    uint index = (uint)instance1.m_segments.m_buffer[(int)segment].Info.m_sortedLanes[i];
-                    //    instance1.m_segments.m_buffer[(int)segment].GetClosestLanePosition(hitPos, NetInfo.LaneType.Pedestrian, VehicleInfo.VehicleType.None, info.m_vehicleType, out closestPedestrianLane, out laneID1, out laneIndex1, out laneOffset1);
-                    //    if (((NetLane.Flags)instance1.m_lanes.m_buffer[laneID1].m_flags & NetLane.Flags.Stop) != NetLane.Flags.None) continue;
-                    //    if ((instance1.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_stopType & info.m_vehicleType) == info.m_vehicleType)
-                    //    {
-                    //        instance1.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_stopType &= ~info.m_vehicleType;
-                    //    }
-                    //}
+                    for (int i = 1; i < netManager.m_segments.m_buffer[(int)segment].Info.m_lanes.Length - 2; i++)
+                    {
+                        uint index = (uint)netManager.m_segments.m_buffer[(int)segment].Info.m_sortedLanes[i];
+                        netManager.m_segments.m_buffer[(int)segment].GetClosestLanePosition(hitPos, NetInfo.LaneType.Pedestrian, VehicleInfo.VehicleType.None, info.m_vehicleType, out closestPedestrianLane, out laneID1, out laneIndex1, out laneOffset1);
+                        if (((NetLane.Flags)netManager.m_lanes.m_buffer[laneID1].m_flags & NetLane.Flags.Stop) != NetLane.Flags.None) continue;
+                        if ((netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_stopType & info.m_vehicleType) == info.m_vehicleType)
+                        {
+                            Debug.Log($"SharedStops remove new stoptypes: {segment}, Stopflag: {info.m_stopFlag}, hitpos. {hitPos.x} {hitPos.y} {hitPos.z}, vehicleType: {info.m_vehicleType}");
+                            netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_stopType &= ~info.m_vehicleType;
+                        }
+                    }
                 }
 
-                if ((int)segment != 0 && instance1.m_segments.m_buffer[(int)segment].GetClosestLanePosition(hitPos, NetInfo.LaneType.Pedestrian, VehicleInfo.VehicleType.None, info.m_vehicleType, out closestPedestrianLane, out laneID1, out laneIndex1, out laneOffset1))
+                if ((int)segment != 0 && netManager.m_segments.m_buffer[(int)segment].GetClosestLanePosition(hitPos, NetInfo.LaneType.Pedestrian, VehicleInfo.VehicleType.None, info.m_vehicleType, out closestPedestrianLane, out laneID1, out laneIndex1, out laneOffset1))
                 {
-                    if (info.m_vehicleType == VehicleInfo.VehicleType.None) //when does this happen? 
-                    {
-                        Debug.LogWarning("VEHICLETYPE not defined");
-                        NetLane.Flags flags1 = (NetLane.Flags)((int)instance1.m_lanes.m_buffer[laneID1].m_flags & 768); //results in none, stop, stop2, or stops
-                        NetLane.Flags flags2 = info.m_stopFlag;
-                        NetInfo info1 = instance1.m_segments.m_buffer[(int)segment].Info;
-                        if (info1.m_vehicleTypes != VehicleInfo.VehicleType.None)
-                            flags2 = NetLane.Flags.None;
-                        if (flags1 != NetLane.Flags.None && flags2 != NetLane.Flags.None && flags1 != flags2)
-                            return false;
-                        float stopOffset = info1.m_lanes[laneIndex1].m_stopOffset;
-                        if ((instance1.m_segments.m_buffer[(int)segment].m_flags & NetSegment.Flags.Invert) != NetSegment.Flags.None)
-                            stopOffset = -stopOffset;
-                        Vector3 direction;
-                        instance1.m_lanes.m_buffer[laneID1].CalculateStopPositionAndDirection(0.5019608f, stopOffset, out hitPos, out direction);
-                        fixedPlatform = true;
-                        return true;
-                    }
+                    //if (info.m_vehicleType == VehicleInfo.VehicleType.None) //when does this happen? 
+                    //{
+                    //    Debug.LogWarning("VEHICLETYPE not defined");
+                    //    NetLane.Flags flags1 = (NetLane.Flags)((int)netManager.m_lanes.m_buffer[laneID1].m_flags & 768); //results in none, stop, stop2, or stops
+                    //    NetLane.Flags flags2 = info.m_stopFlag;
+                    //    NetInfo info1 = netManager.m_segments.m_buffer[(int)segment].Info;
+                    //    if (info1.m_vehicleTypes != VehicleInfo.VehicleType.None)
+                    //        flags2 = NetLane.Flags.None;
+                    //    if (flags1 != NetLane.Flags.None && flags2 != NetLane.Flags.None && flags1 != flags2)
+                    //        return false;
+                    //    float stopOffset = info1.m_lanes[laneIndex1].m_stopOffset;
+                    //    if ((netManager.m_segments.m_buffer[(int)segment].m_flags & NetSegment.Flags.Invert) != NetSegment.Flags.None)
+                    //        stopOffset = -stopOffset;
+                    //    Vector3 direction;
+                    //    netManager.m_lanes.m_buffer[laneID1].CalculateStopPositionAndDirection(0.5019608f, stopOffset, out hitPos, out direction);
+                    //    fixedPlatform = true;
+                    //    return true;
+                    //}
                     Vector3 position2;
                     uint laneID2;
                     int laneIndex2;
                     float laneOffset2;
-                    if (instance1.m_segments.m_buffer[(int)segment].GetClosestLanePosition(closestPedestrianLane, NetInfo.LaneType.Vehicle | NetInfo.LaneType.TransportVehicle, info.m_vehicleType, out position2, out laneID2, out laneIndex2, out laneOffset2))
+                    if (netManager.m_segments.m_buffer[(int)segment].GetClosestLanePosition(closestPedestrianLane, NetInfo.LaneType.Vehicle | NetInfo.LaneType.TransportVehicle, info.m_vehicleType, out position2, out laneID2, out laneIndex2, out laneOffset2))
                     {
-                        Debug.Log($"SharedStops hover Segment: {segment}, Building: {building}, NetFlags: {instance1.m_lanes.m_buffer[laneID1].m_flags}, vehicleType: {info.m_vehicleType}");
+                        //Debug.Log($"SharedStops hover Segment: {segment}, Building: {building}, NetFlags: {instance1.m_lanes.m_buffer[laneID1].m_flags}, vehicleType: {info.m_vehicleType}");
                         //NetLane.Flags flags = (NetLane.Flags)((int)instance1.m_lanes.m_buffer[laneID1].m_flags & 768);
                         //if (flags != NetLane.Flags.None && info.m_stopFlag != NetLane.Flags.None && flags != info.m_stopFlag)
                         //    return true;
-                        float stopOffset = instance1.m_segments.m_buffer[(int)segment].Info.m_lanes[laneIndex2].m_stopOffset;
-                        //if ((instance1.m_segments.m_buffer[(int)segment].m_flags & NetSegment.Flags.Invert) != NetSegment.Flags.None)  //whats that for? 
-                        //    stopOffset = -stopOffset;
+                        float stopOffset = netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[laneIndex2].m_stopOffset;
+                        if ((netManager.m_segments.m_buffer[(int)segment].m_flags & NetSegment.Flags.Invert) != NetSegment.Flags.None)  //check for inverted lanes
+                            stopOffset = -stopOffset;
                         Vector3 direction;
-                        instance1.m_lanes.m_buffer[laneID2].CalculateStopPositionAndDirection(0.5019608f, stopOffset, out hitPos, out direction);
+                        netManager.m_lanes.m_buffer[laneID2].CalculateStopPositionAndDirection(0.5019608f, stopOffset, out hitPos, out direction);
                         fixedPlatform = true; //true or false_? true better for now
                         return true;
                     }
                 }
             }
-            //begin mod(*): check for !alternateMode
+
             if (!alternateMode && (int)building != 0)
             {
-                //end mod
                 ushort num1 = 0;
-                if ((instance2.m_buildings.m_buffer[(int)building].m_flags & Building.Flags.Untouchable) != Building.Flags.None)
+                if ((buildingManager.m_buildings.m_buffer[(int)building].m_flags & Building.Flags.Untouchable) != Building.Flags.None)
                     num1 = Building.FindParentBuilding(building);
                 if (this.m_building != 0 && (int)firstStop != 0 && (this.m_building == (int)building || this.m_building == (int)num1))
                 {
-                    hitPos = instance1.m_nodes.m_buffer[(int)firstStop].m_position;
+                    hitPos = netManager.m_nodes.m_buffer[(int)firstStop].m_position;
                     return true;
                 }
                 VehicleInfo randomVehicleInfo = Singleton<VehicleManager>.instance.GetRandomVehicleInfo(ref Singleton<SimulationManager>.instance.m_randomizer, info.m_class.m_service, info.m_class.m_subService, info.m_class.m_level);
                 if (randomVehicleInfo != null)
                 {
-                    BuildingInfo info1 = instance2.m_buildings.m_buffer[(int)building].Info;
+                    BuildingInfo info1 = buildingManager.m_buildings.m_buffer[(int)building].Info;
                     TransportInfo transportLineInfo1 = info1.m_buildingAI.GetTransportLineInfo();
                     if (transportLineInfo1 == null && (int)num1 != 0)
                     {
                         building = num1;
-                        info1 = instance2.m_buildings.m_buffer[(int)building].Info;
+                        info1 = buildingManager.m_buildings.m_buffer[(int)building].Info;
                         transportLineInfo1 = info1.m_buildingAI.GetTransportLineInfo();
                     }
                     TransportInfo transportLineInfo2 = info1.m_buildingAI.GetSecondaryTransportLineInfo();
@@ -232,10 +147,10 @@ namespace AdvancedStopSelection.Detour
                             Randomizer randomizer = new Randomizer((ulong)index);
                             Vector3 position;
                             Vector3 target;
-                            info1.m_buildingAI.CalculateSpawnPosition(building, ref instance2.m_buildings.m_buffer[(int)building], ref randomizer, randomVehicleInfo, out position, out target);
+                            info1.m_buildingAI.CalculateSpawnPosition(building, ref buildingManager.m_buildings.m_buffer[(int)building], ref randomizer, randomVehicleInfo, out position, out target);
                             int num3 = 0;
                             if (info.m_avoidSameStopPlatform)
-                                num3 = this.GetLineCount(position, target - position, info.m_transportType);
+                                num3 = this.GetLineCount(position, target - position, info.m_transportType);  //
                             if (num3 < num2)
                             {
                                 vector3 = position;
@@ -246,14 +161,14 @@ namespace AdvancedStopSelection.Detour
                         }
                         if ((int)firstStop != 0)
                         {
-                            Vector3 position = instance1.m_nodes.m_buffer[(int)firstStop].m_position;
+                            Vector3 position = netManager.m_nodes.m_buffer[(int)firstStop].m_position;
                             if ((double)Vector3.SqrMagnitude(position - vector3) < 16384.0)
                             {
-                                uint lane = instance1.m_nodes.m_buffer[(int)firstStop].m_lane;
+                                uint lane = netManager.m_nodes.m_buffer[(int)firstStop].m_lane;
                                 if ((int)lane != 0)
                                 {
-                                    ushort segment1 = instance1.m_lanes.m_buffer[lane].m_segment;
-                                    if ((int)segment1 != 0 && (instance1.m_segments.m_buffer[(int)segment1].m_flags & NetSegment.Flags.Untouchable) != NetSegment.Flags.None)
+                                    ushort segment1 = netManager.m_lanes.m_buffer[lane].m_segment;
+                                    if ((int)segment1 != 0 && (netManager.m_segments.m_buffer[(int)segment1].m_flags & NetSegment.Flags.Untouchable) != NetSegment.Flags.None)
                                     {
                                         ushort ownerBuilding = NetSegment.FindOwnerBuilding(segment1, 363f);
                                         if ((int)building == (int)ownerBuilding)
@@ -276,7 +191,7 @@ namespace AdvancedStopSelection.Detour
         [RedirectReverse]
         private int GetLineCount(Vector3 stopPosition, Vector3 stopDirection, TransportInfo.TransportType transportType)
         {
-            UnityEngine.Debug.Log("GetLineCount");
+            Debug.Log("GetLineCount");
             return 0;
         }
 

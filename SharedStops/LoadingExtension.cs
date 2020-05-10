@@ -13,7 +13,6 @@ namespace AdvancedStopSelection
         public override void OnLevelLoaded(LoadMode mode)
         {
             base.OnLevelLoaded(mode);
-            Debug.Log("Loaded!");
 
             Redirector<TransportToolDetour>.Deploy();
 
@@ -23,7 +22,6 @@ namespace AdvancedStopSelection
                 if (!network.m_hasPedestrianLanes) continue;
                 RoadAI ai = network.m_netAI as RoadAI;
                 if (ai == null) continue;
-                //Debug.Log($"roadAi found {ai}");
                 bool hasStops = false;
                 foreach (NetInfo.Lane lane in network.m_lanes)
                 {
@@ -40,28 +38,25 @@ namespace AdvancedStopSelection
                 VehicleInfo.VehicleType secondStopType = network.m_lanes[network.m_sortedLanes[network.m_sortedLanes.Length - 1]].m_stopType;
                 VehicleInfo.VehicleType middleStopType = VehicleInfo.VehicleType.None;
 
-                for (int i = 1; i < network.m_sortedLanes.Length - 1; i++)
+                for (int i = 1; i < network.m_lanes.Length - 2; i++)
                 {
-                    if (network.m_lanes[network.m_sortedLanes[i]].m_stopType != VehicleInfo.VehicleType.None)
+                    if (network.m_lanes[network.m_sortedLanes[i]].m_laneType == NetInfo.LaneType.Pedestrian)
                     {
                         middleStopType = network.m_lanes[network.m_sortedLanes[i]].m_stopType;
                         break;
                     }
                 }
-                //Debug.Log($"stoptypes are {firstStopType}; {secondStopType}");
-                EnableStops(ai.m_info, firstStopType, middleStopType, secondStopType);
                 EnableStops(ai.m_elevatedInfo, firstStopType, middleStopType, secondStopType);
                 EnableStops(ai.m_bridgeInfo, firstStopType, middleStopType, secondStopType);
                 EnableStops(ai.m_slopeInfo, firstStopType, middleStopType, secondStopType);
-                EnableStops(ai.m_tunnelInfo, firstStopType, middleStopType, secondStopType);
-                EnableStops(network, firstStopType, middleStopType, secondStopType);
+                EnableStops(ai.m_tunnelInfo, firstStopType, middleStopType, secondStopType);          
             }
         }
 
         public override void OnLevelUnloading()
         {
-            base.OnLevelUnloading();
             Redirector<TransportToolDetour>.Revert();
+            base.OnLevelUnloading();
         }
 
 
@@ -69,7 +64,7 @@ namespace AdvancedStopSelection
         private static void EnableStops(NetInfo info, VehicleInfo.VehicleType firstStopType, VehicleInfo.VehicleType middleStopType, VehicleInfo.VehicleType secondStopType)
         {
             if (info == null) return;
-            for (int i = 1; i < info.m_sortedLanes.Length - 1; i++) // -2 ?
+            for (int i = 1; i < info.m_lanes.Length - 2; i++)
             {
                 if (info.m_lanes[info.m_sortedLanes[i]].m_vehicleType == VehicleInfo.VehicleType.None)
                 {

@@ -13,10 +13,5 @@ namespace AdvancedStopSelection.StopSelection
         {
             return (transportLine.m_flags & flag) == flag;
         }
-
-        public static void ForEachLine(this TransportLine transportLine, ushort lineID)
-        {
-           
-        }
     }
 }

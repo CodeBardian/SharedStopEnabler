@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 
-namespace AdvancedStopSelection.StopSelection
+namespace SharedStopEnabler.StopSelection
 {
     public static class StopSelectionExtensions
     {

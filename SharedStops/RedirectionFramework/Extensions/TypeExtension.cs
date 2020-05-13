@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace AdvancedStopSelection.RedirectionFramework.Extensions
+namespace SharedStopEnabler.RedirectionFramework.Extensions
 {
     public static class TypeExtension
     {

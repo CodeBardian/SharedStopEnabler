@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AdvancedStopSelection.RedirectionFramework.Attributes
+namespace SharedStopEnabler.RedirectionFramework.Attributes
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
     public class TargetTypeAttribute : Attribute

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using AdvancedStopSelection.RedirectionFramework.Attributes;
+using SharedStopEnabler.RedirectionFramework.Attributes;
 
-namespace AdvancedStopSelection.RedirectionFramework
+namespace SharedStopEnabler.RedirectionFramework
 {
     public static class RedirectionUtil
     {

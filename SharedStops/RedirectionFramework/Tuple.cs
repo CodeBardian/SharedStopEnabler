@@ -1,4 +1,4 @@
-﻿namespace AdvancedStopSelection.RedirectionFramework
+﻿namespace SharedStopEnabler.RedirectionFramework
 {
     public class Tuple<T1, T2>
     {

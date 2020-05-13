@@ -21,7 +21,7 @@ THE SOFTWARE.
 using System;
 using System.Reflection;
 
-namespace AdvancedStopSelection.RedirectionFramework
+namespace SharedStopEnabler.RedirectionFramework
 {
 
     public class RedirectCallsState

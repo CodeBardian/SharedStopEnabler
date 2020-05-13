@@ -4,12 +4,12 @@ using System.Linq;
 using ICities;
 using UnityEngine;
 
-namespace AdvancedStopSelection
+namespace SharedStopEnabler
 {
     public class SharedStops : IUserMod
     {
-        public string Name => "Advanced Stop Selection";
+        public string Name => "Shared Stop Enabler";
 
-        public string Description => "Shared Public Transport Stops for buses and trams + advanced stop selection for trains and metros (shift-click)";
+        public string Description => "Shared Public Transport Stops (shift-click)";
     }
 }

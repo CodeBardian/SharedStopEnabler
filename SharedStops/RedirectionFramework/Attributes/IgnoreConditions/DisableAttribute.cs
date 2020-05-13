@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace AdvancedStopSelection.RedirectionFramework.Attributes.IgnoreConditions
+namespace SharedStopEnabler.RedirectionFramework.Attributes.IgnoreConditions
 {
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Property)]
     public class DisableAttribute : IgnoreConditionAttribute

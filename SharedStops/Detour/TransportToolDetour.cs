@@ -2,10 +2,10 @@
 using System.Reflection;
 using ColossalFramework;
 using ColossalFramework.Math;
-using AdvancedStopSelection.RedirectionFramework.Attributes;
+using SharedStopEnabler.RedirectionFramework.Attributes;
 using UnityEngine;
 
-namespace AdvancedStopSelection.Detour
+namespace SharedStopEnabler.Detour
 {
     [TargetType(typeof(TransportTool))]
     public class TransportToolDetour : TransportTool
@@ -225,7 +225,6 @@ namespace AdvancedStopSelection.Detour
             return 0;
         }
 
-        private ushort m_line => (ushort)typeof(TransportTool).GetField("m_line",
-            BindingFlags.NonPublic | BindingFlags.Instance).GetValue(this);
+        private ushort m_line => (ushort)typeof(TransportTool).GetField("m_line", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(this);
     }
 }

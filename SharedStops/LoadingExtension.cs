@@ -2,11 +2,11 @@
 using ColossalFramework.UI;
 using ICities;
 using UnityEngine;
-using AdvancedStopSelection.StopSelection;
-using AdvancedStopSelection.RedirectionFramework;
-using AdvancedStopSelection.Detour;
+using SharedStopEnabler.StopSelection;
+using SharedStopEnabler.RedirectionFramework;
+using SharedStopEnabler.Detour;
 
-namespace AdvancedStopSelection
+namespace SharedStopEnabler
 {
     public class SharedStopsLoadingExtension : LoadingExtensionBase
     {
@@ -31,7 +31,6 @@ namespace AdvancedStopSelection
                         break;
                     }
                 }
-                //bool hasStops = network.m_lanes.Any(lane => lane.m_stopType != VehicleInfo.VehicleType.None);  //why doesnt that work
                 if (!hasStops) continue;
 
                 VehicleInfo.VehicleType firstStopType = network.m_lanes[network.m_sortedLanes[0]].m_stopType;

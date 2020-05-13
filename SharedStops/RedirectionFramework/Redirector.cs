@@ -1,6 +1,6 @@
-﻿using AdvancedStopSelection.RedirectionFramework.Extensions;
+﻿using SharedStopEnabler.RedirectionFramework.Extensions;
 
-namespace AdvancedStopSelection.RedirectionFramework
+namespace SharedStopEnabler.RedirectionFramework
 {
     public class Redirector<T>
     {

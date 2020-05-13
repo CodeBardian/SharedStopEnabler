@@ -10,6 +10,6 @@ namespace SharedStopEnabler
     {
         public string Name => "Shared Stop Enabler";
 
-        public string Description => "Shared Public Transport Stops (shift-click)";
+        public string Description => "Shared Public Transport Stops";
     }
 }

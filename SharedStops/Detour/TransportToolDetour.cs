@@ -20,6 +20,7 @@ namespace AdvancedStopSelection.Detour
 
             NetManager netManager = Singleton<NetManager>.instance;
             BuildingManager buildingManager = Singleton<BuildingManager>.instance;
+            TransportManager transportManager = Singleton<TransportManager>.instance;
 
             fixedPlatform = false;
 
@@ -39,40 +40,52 @@ namespace AdvancedStopSelection.Detour
                             building = (ushort)0;
                     }
                 }
-
+       
                 if ((int)segment != 0 && alternateMode && !additionalStopsSet)  //set additional stoptypes
                 {
+                    additionalStopsSet = true;
+                    additionalStopsRemoved = false;
                     for (int i = 1; i < netManager.m_segments.m_buffer[(int)segment].Info.m_lanes.Length - 2; i++)
                     {
-                        netManager.m_segments.m_buffer[(int)segment].GetClosestLanePosition(hitPos, NetInfo.LaneType.Pedestrian, VehicleInfo.VehicleType.None, info.m_vehicleType, out Vector3 position, out uint laneID, out int laneIndex, out float laneOffset);
                         uint index = (uint)netManager.m_segments.m_buffer[(int)segment].Info.m_sortedLanes[i];
                         //if ((netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_vehicleType == VehicleInfo.VehicleType.None) && (netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_stopType != info.m_vehicleType))  
-                        if (IsValidLane(laneID, index, info))
+                        if (IsValidLane(segment, (uint)i, info))
                         {
                             Debug.Log($"SharedStops calculate new stoptypes: {segment}, Stopflag: {info.m_stopFlag}, hitpos. {hitPos.x} {hitPos.y} {hitPos.z}, vehicleType: {info.m_vehicleType}");
-                            netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_stopType |= info.m_vehicleType;
-                            additionalStopsSet = true;
-                            additionalStopsRemoved = false;
+                            netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_stopType |= info.m_vehicleType;                      
                         }
                     }
                 }
+
                 if ((int)segment != 0 && !alternateMode && !additionalStopsRemoved)  //remove additional stoptypes
                 {
                     additionalStopsRemoved = true;
                     additionalStopsSet = false;
-                    for (int i = 1; i < netManager.m_segments.m_buffer[(int)segment].Info.m_lanes.Length - 2; i++)
+                    if (firstStop != 0)
                     {
+                        var lastStop = transportManager.m_lines.m_buffer[m_line].GetLastStop();
+                        uint stoplane = netManager.m_nodes.m_buffer[(int)lastStop].m_lane;
+                        ushort stopsegment = netManager.m_lanes.m_buffer[stoplane].m_segment;
+                        if (segment == stopsegment)
+                        {
+                            Debug.Log($"firststop {lastStop}");
+                            goto Main;
+                        }
+                    }
+                    for (int i = 1; i < netManager.m_segments.m_buffer[(int)segment].Info.m_lanes.Length - 2; i++)
+                    { 
                         uint index = (uint)netManager.m_segments.m_buffer[(int)segment].Info.m_sortedLanes[i];
-                        netManager.m_segments.m_buffer[(int)segment].GetClosestLanePosition(hitPos, NetInfo.LaneType.Pedestrian, VehicleInfo.VehicleType.None, info.m_vehicleType, out Vector3 position, out uint laneID, out int laneIndex, out float laneOffset);
-                        if (((NetLane.Flags)netManager.m_lanes.m_buffer[laneID].m_flags & NetLane.Flags.Stop) != NetLane.Flags.None) continue;
+                        //netManager.m_segments.m_buffer[(int)segment].GetClosestLanePosition(hitPos, NetInfo.LaneType.Pedestrian, VehicleInfo.VehicleType.None, info.m_vehicleType, out Vector3 position, out uint laneID, out int laneIndex, out float laneOffset);
+                        //if (((NetLane.Flags)netManager.m_lanes.m_buffer[laneID].m_flags & NetLane.Flags.Stop) != NetLane.Flags.None) continue;
                         if ((netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_stopType & info.m_vehicleType) == info.m_vehicleType)
                         {
                             Debug.Log($"SharedStops remove new stoptypes: {segment}, Stopflag: {info.m_stopFlag}, hitpos. {hitPos.x} {hitPos.y} {hitPos.z}, vehicleType: {info.m_vehicleType}");
-                            netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_stopType &= ~info.m_vehicleType;
+                            netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_stopType &= ~info.m_vehicleType;                           
                         }
                     }
                 }
 
+                Main:
                 if ((int)segment != 0 && netManager.m_segments.m_buffer[(int)segment].GetClosestLanePosition(hitPos, NetInfo.LaneType.Pedestrian, VehicleInfo.VehicleType.None, info.m_vehicleType, out Vector3 closestPedestrianLane, out _, out _, out _))
                 {
                     //if (info.m_vehicleType == VehicleInfo.VehicleType.None) //when does this happen? 
@@ -183,19 +196,23 @@ namespace AdvancedStopSelection.Detour
             return false;
         }
 
-        private bool IsValidLane(uint lane, uint refIndex, TransportInfo info) //check left and right lanes
+        private bool IsValidLane(uint segment, uint laneIndex, TransportInfo info) //check left and right lanes
         {
             var netManager = Singleton<NetManager>.instance;
-            ushort segment = netManager.m_lanes.m_buffer[lane].m_segment;
-            if ((netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[refIndex].m_vehicleType == VehicleInfo.VehicleType.None) && (netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[refIndex].m_stopType != info.m_vehicleType))
+            uint index = (uint)netManager.m_segments.m_buffer[(int)segment].Info.m_sortedLanes[laneIndex];
+            if ((netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_vehicleType == VehicleInfo.VehicleType.None) && ((netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_stopType & info.m_vehicleType) != info.m_vehicleType))
+            //if ((netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_vehicleType == VehicleInfo.VehicleType.None) && (netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_stopType != info.m_vehicleType))
             {
-                //if (info.m_transportType == TransportInfo.TransportType.Bus)
-                //{
-                //    if (netManager.m_segments.m_buffer[segment].Info.m_lanes[refIndex+1].m_vehicleType != info.m_vehicleType)
-                //    {
-                //        return false;
-                //    }
-                //}
+                if (info.m_transportType == TransportInfo.TransportType.Bus)
+                {
+                    int index1 = netManager.m_segments.m_buffer[(int)segment].Info.m_sortedLanes[laneIndex + 1];
+                    int index2 = netManager.m_segments.m_buffer[(int)segment].Info.m_sortedLanes[laneIndex - 1];
+                    Debug.Log($"+1 lane: {netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index1].m_vehicleType}, -1 lane: {netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index2].m_vehicleType}");
+                    if (((netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index1].m_vehicleType & info.m_vehicleType) != info.m_vehicleType) || ((netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index2].m_vehicleType & info.m_vehicleType) != info.m_vehicleType))
+                    {
+                        return false;
+                    }
+                }
                 return true;
             }
             return false;

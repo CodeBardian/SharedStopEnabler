@@ -74,6 +74,7 @@
     <Compile Include="SharedStops.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StopSelection\StopSelectionExtensions.cs" />
+    <Compile Include="Util\Log.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

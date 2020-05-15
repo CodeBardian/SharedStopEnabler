@@ -6,6 +6,7 @@ using ColossalFramework.Math;
 using SharedStopEnabler.RedirectionFramework.Attributes;
 using UnityEngine;
 using SharedStopEnabler.StopSelection;
+using SharedStopEnabler.Util;
 
 namespace SharedStopEnabler.Detour
 {
@@ -52,7 +53,7 @@ namespace SharedStopEnabler.Detour
                         uint index = (uint)netManager.m_segments.m_buffer[(int)segment].Info.m_sortedLanes[i]; 
                         if (IsValidLane(segment, (uint)i, info))
                         {
-                            //Debug.Log($"SharedStops calculate new stoptypes: {segment}, Stopflag: {info.m_stopFlag}, hitpos. {hitPos.x} {hitPos.y} {hitPos.z}, vehicleType: {info.m_vehicleType}");
+                            Log.Debug($"SharedStops calculate new stoptypes: {segment}, Stopflag: {info.m_stopFlag}, hitpos. {hitPos.x} {hitPos.y} {hitPos.z}, vehicleType: {info.m_vehicleType}");
                             netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_stopType |= info.m_vehicleType;                      
                         }
                     }
@@ -68,7 +69,7 @@ namespace SharedStopEnabler.Detour
                         uint index = (uint)netManager.m_segments.m_buffer[(int)segment].Info.m_sortedLanes[i];
                         if ((netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_stopType & info.m_vehicleType) == info.m_vehicleType)
                         {
-                            //Debug.Log($"SharedStops remove new stoptypes: {segment}, Stopflag: {info.m_stopFlag}, hitpos. {hitPos.x} {hitPos.y} {hitPos.z}, vehicleType: {info.m_vehicleType}");
+                            Log.Debug($"SharedStops remove new stoptypes: {segment}, Stopflag: {info.m_stopFlag}, hitpos. {hitPos.x} {hitPos.y} {hitPos.z}, vehicleType: {info.m_vehicleType}");
                             netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_stopType &= ~info.m_vehicleType;                           
                         }
                     }
@@ -102,7 +103,7 @@ namespace SharedStopEnabler.Detour
                 {
                     parentBuilding = Building.FindParentBuilding(building);
                 }
-                if (this.m_building != 0 && (int)firstStop != 0 && (this.m_building == (int)building || this.m_building == (int)parentBuilding))  //seems to never be called btw
+                if (this.m_building != 0 && (int)firstStop != 0 && (this.m_building == (int)building || this.m_building == (int)parentBuilding))  //seems to never be called?
                 {
                     hitPos = netManager.m_nodes.m_buffer[(int)firstStop].m_position;
                     return true;

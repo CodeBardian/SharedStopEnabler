@@ -5,6 +5,8 @@ using UnityEngine;
 using SharedStopEnabler.StopSelection;
 using SharedStopEnabler.RedirectionFramework;
 using SharedStopEnabler.Detour;
+using SharedStopEnabler.Util;
+using System;
 
 namespace SharedStopEnabler
 {
@@ -12,10 +14,47 @@ namespace SharedStopEnabler
     {
         public override void OnLevelLoaded(LoadMode mode)
         {
+            Log.Info($"OnLevelLoaded: {mode}");
             base.OnLevelLoaded(mode);
 
-            Redirector<TransportToolDetour>.Deploy();
+            try
+            {
+                Redirector<TransportToolDetour>.Deploy();
+                Log.Info($"Detour deployed");
+            }
+            catch (Exception e)
+            {
+                Log.Error($"Failed deploying detour: {e}");
+            }
 
+            try
+            {
+                EnableElevatedStops();
+                Log.Info($"elevated stops enabled");
+            }
+            catch (Exception e)
+            {
+                Log.Error($"Failed enabling elevated stops: {e}");
+            }
+        }
+        public override void OnLevelUnloading()
+        {
+            try
+            {
+                Redirector<TransportToolDetour>.Revert();
+                Log.Info($"detour reverted");
+            }
+            catch (Exception e)
+            {
+                Log.Error($"Failed reverting detour: {e}");
+            }
+            base.OnLevelUnloading();
+            Log.Info($"level unloaded");
+
+        }
+
+        private void EnableElevatedStops()
+        {
             NetInfo[] networks = Resources.FindObjectsOfTypeAll<NetInfo>();
             foreach (var network in networks)
             {
@@ -48,17 +87,9 @@ namespace SharedStopEnabler
                 EnableStops(ai.m_elevatedInfo, firstStopType, middleStopType, secondStopType);
                 EnableStops(ai.m_bridgeInfo, firstStopType, middleStopType, secondStopType);
                 EnableStops(ai.m_slopeInfo, firstStopType, middleStopType, secondStopType);
-                EnableStops(ai.m_tunnelInfo, firstStopType, middleStopType, secondStopType);          
+                EnableStops(ai.m_tunnelInfo, firstStopType, middleStopType, secondStopType);
             }
         }
-
-        public override void OnLevelUnloading()
-        {
-            Redirector<TransportToolDetour>.Revert();
-            base.OnLevelUnloading();
-        }
-
-
 
         private static void EnableStops(NetInfo info, VehicleInfo.VehicleType firstStopType, VehicleInfo.VehicleType middleStopType, VehicleInfo.VehicleType secondStopType)
         {

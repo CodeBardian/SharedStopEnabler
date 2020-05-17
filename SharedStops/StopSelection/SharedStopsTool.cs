@@ -1,23 +1,26 @@
-﻿using System;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using ColossalFramework;
+﻿using ColossalFramework;
 using ColossalFramework.Math;
-using SharedStopEnabler.RedirectionFramework.Attributes;
-using UnityEngine;
-using SharedStopEnabler.StopSelection;
 using SharedStopEnabler.Util;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using UnityEngine;
 
-namespace SharedStopEnabler.Detour
+namespace SharedStopEnabler.StopSelection
 {
-    [TargetType(typeof(TransportTool))]
-    public class TransportToolDetour : TransportTool
+    class SharedStopsTool : MonoBehaviour
     {
+        public NetSegment[] m_segments;
+        public NetSegment[] m_tempSegments;
+
         private bool additionalStopsSet = false;
         private bool additionalStopsRemoved = true;
 
-        [RedirectMethod]
-        private bool GetStopPosition(TransportInfo info, ushort segment, ushort building, ushort firstStop, ref Vector3 hitPos, out bool fixedPlatform)
+        private int m_building => (int)typeof(TransportTool).GetField("m_building", BindingFlags.Public | BindingFlags.Instance).GetValue(Singleton<TransportTool>.instance);
+
+        public bool GetStopPosition(TransportInfo info, ushort segment, ushort building, ushort firstStop, ref Vector3 hitPos, out bool fixedPlatform)
         {
             bool alternateMode = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
 
@@ -43,18 +46,19 @@ namespace SharedStopEnabler.Detour
                             building = (ushort)0;
                     }
                 }
-       
+
                 if ((int)segment != 0 && alternateMode && !additionalStopsSet)  //set additional stoptypes
                 {
                     additionalStopsSet = true;
                     additionalStopsRemoved = false;
                     for (int i = 1; i < netManager.m_segments.m_buffer[(int)segment].Info.m_lanes.Length - 2; i++)
                     {
-                        uint index = (uint)netManager.m_segments.m_buffer[(int)segment].Info.m_sortedLanes[i]; 
+                        uint index = (uint)netManager.m_segments.m_buffer[(int)segment].Info.m_sortedLanes[i];
                         if (IsValidLane(segment, (uint)i, info))
                         {
                             Log.Debug($"SharedStops calculate new stoptypes: {segment}, Stopflag: {info.m_stopFlag}, hitpos. {hitPos.x} {hitPos.y} {hitPos.z}, vehicleType: {info.m_vehicleType}");
-                            netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_stopType |= info.m_vehicleType;                      
+                            netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_stopType |= info.m_vehicleType;
+
                         }
                     }
                 }
@@ -65,31 +69,34 @@ namespace SharedStopEnabler.Detour
                     additionalStopsSet = false;
                     if (netManager.m_segments.m_buffer[(int)segment].HasStops(segment)) goto Main;
                     for (int i = 1; i < netManager.m_segments.m_buffer[(int)segment].Info.m_lanes.Length - 2; i++)
-                    { 
+                    {
                         uint index = (uint)netManager.m_segments.m_buffer[(int)segment].Info.m_sortedLanes[i];
                         if ((netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_stopType & info.m_vehicleType) == info.m_vehicleType)
                         {
                             Log.Debug($"SharedStops remove new stoptypes: {segment}, Stopflag: {info.m_stopFlag}, hitpos. {hitPos.x} {hitPos.y} {hitPos.z}, vehicleType: {info.m_vehicleType}");
-                            netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_stopType &= ~info.m_vehicleType;                           
+                            netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_stopType &= ~info.m_vehicleType;
                         }
                     }
                 }
 
-                Main:
+            Main:
                 if ((int)segment != 0 && netManager.m_segments.m_buffer[(int)segment].GetClosestLanePosition(hitPos, NetInfo.LaneType.Pedestrian, VehicleInfo.VehicleType.None, info.m_vehicleType, out Vector3 closestPedestrianLane, out uint laneid1, out _, out _))
                 {
                     if (netManager.m_segments.m_buffer[(int)segment].GetClosestLanePosition(closestPedestrianLane, NetInfo.LaneType.Vehicle | NetInfo.LaneType.TransportVehicle, info.m_vehicleType, out Vector3 position2, out uint laneID2, out int laneIndex2, out float laneOffset2))
                     {
+
                         NetLane.Flags flags3 = (NetLane.Flags)netManager.m_lanes.m_buffer[(int)segment].m_flags;
                         flags3 &= NetLane.Flags.Stops;
                         if (flags3 != NetLane.Flags.None && info.m_stopFlag != NetLane.Flags.None && flags3 != info.m_stopFlag)
                         {
+                            Log.Debug("Flags set");
                             return false;
                         }
                         float stopOffset = netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[laneIndex2].m_stopOffset;
                         if ((netManager.m_segments.m_buffer[(int)segment].m_flags & NetSegment.Flags.Invert) != NetSegment.Flags.None)  //check for inverted lanes
                             stopOffset = -stopOffset;
                         netManager.m_lanes.m_buffer[laneID2].CalculateStopPositionAndDirection(0.5019608f, stopOffset, out hitPos, out Vector3 direction);
+                        //Log.Debug($"pedesrianlane: {laneid1}, vehiclelane: {laneID2}, stoppos: {hitPos}");
                         fixedPlatform = true;
                         return true;
                     }
@@ -131,7 +138,7 @@ namespace SharedStopEnabler.Detour
                             int linecount = 0;
                             if (info.m_avoidSameStopPlatform)
                                 linecount = this.GetLineCount(spawnposition, target - spawnposition, info.m_transportType);  //
-                            if (linecount < num2) 
+                            if (linecount < num2)
                             {
                                 vector3 = spawnposition;
                                 num2 = linecount;
@@ -188,13 +195,46 @@ namespace SharedStopEnabler.Detour
             return false;
         }
 
-        [RedirectReverse]
         private int GetLineCount(Vector3 stopPosition, Vector3 stopDirection, TransportInfo.TransportType transportType)
         {
-            Debug.Log("GetLineCount");
-            return 0;
+            NetManager instance = Singleton<NetManager>.instance;
+            TransportManager instance2 = Singleton<TransportManager>.instance;
+            stopDirection.Normalize();
+            Segment3 segment = new Segment3(stopPosition - stopDirection * 16f, stopPosition + stopDirection * 16f);
+            Vector3 vector = segment.Min();
+            Vector3 vector2 = segment.Max();
+            int num = Mathf.Max((int)((vector.x - 4f) / 64f + 135f), 0);
+            int num2 = Mathf.Max((int)((vector.z - 4f) / 64f + 135f), 0);
+            int num3 = Mathf.Min((int)((vector2.x + 4f) / 64f + 135f), 269);
+            int num4 = Mathf.Min((int)((vector2.z + 4f) / 64f + 135f), 269);
+            int num5 = 0;
+            for (int i = num2; i <= num4; i++)
+            {
+                for (int j = num; j <= num3; j++)
+                {
+                    ushort num6 = instance.m_nodeGrid[i * 270 + j];
+                    int num7 = 0;
+                    while (num6 != 0)
+                    {
+                        ushort transportLine = instance.m_nodes.m_buffer[(int)num6].m_transportLine;
+                        if (transportLine != 0)
+                        {
+                            TransportInfo info = instance2.m_lines.m_buffer[(int)transportLine].Info;
+                            if (info.m_transportType == transportType && (instance2.m_lines.m_buffer[(int)transportLine].m_flags & TransportLine.Flags.Temporary) == TransportLine.Flags.None && segment.DistanceSqr(instance.m_nodes.m_buffer[(int)num6].m_position) < 16f)
+                            {
+                                num5++;
+                            }
+                        }
+                        num6 = instance.m_nodes.m_buffer[(int)num6].m_nextGridNode;
+                        if (++num7 >= 32768)
+                        {
+                            CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + Environment.StackTrace);
+                            break;
+                        }
+                    }
+                }
+            }
+            return num5;
         }
-
-        private ushort m_line => (ushort)typeof(TransportTool).GetField("m_line", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(this);
     }
 }

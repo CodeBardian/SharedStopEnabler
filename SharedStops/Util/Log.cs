@@ -23,7 +23,7 @@ namespace SharedStopEnabler.Util
             Error
         }
 
-        private static Stopwatch _sw = Stopwatch.StartNew();
+        private static Stopwatch sw = Stopwatch.StartNew();
 
         static Log()
         {
@@ -61,16 +61,13 @@ namespace SharedStopEnabler.Util
 
         private static void WriteToFile(string log, LogType type)
         {
-            try
+            lock (LogLock)
             {
-                Monitor.Enter(LogLock);
-
                 using (StreamWriter w = File.AppendText(LogFilename))
                 {
-                    long secs = _sw.ElapsedTicks / Stopwatch.Frequency;
-                    long fraction = _sw.ElapsedTicks % Stopwatch.Frequency;
-                    w.WriteLine(
-                        $"{type} {secs:n0}.{fraction:D7}: {log}");
+                    long secs = sw.ElapsedTicks / Stopwatch.Frequency;
+                    long fraction = sw.ElapsedTicks % Stopwatch.Frequency;
+                    w.WriteLine($"{type} {secs:n0}.{fraction:D7}: {log}");
 
                     if (type == LogType.Warning || type == LogType.Error)
                     {
@@ -78,10 +75,6 @@ namespace SharedStopEnabler.Util
                         w.WriteLine();
                     }
                 }
-            }
-            finally
-            {
-                Monitor.Exit(LogLock);
             }
         }
     }

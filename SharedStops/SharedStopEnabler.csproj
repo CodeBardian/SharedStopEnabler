@@ -63,6 +63,7 @@
     <Compile Include="LoadingExtension.cs" />
     <Compile Include="SharedStops.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StopSelection\ElevatedStops.cs" />
     <Compile Include="StopSelection\Patch\TransportLinePatch.cs" />
     <Compile Include="StopSelection\SharedStopsTool.cs" />
     <Compile Include="StopSelection\StopSelectionExtensions.cs" />

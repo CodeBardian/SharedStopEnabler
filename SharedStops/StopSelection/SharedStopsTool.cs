@@ -19,6 +19,7 @@ namespace SharedStopEnabler.StopSelection
         private bool additionalStopsRemoved = true;
 
         private int m_building => (int)typeof(TransportTool).GetField("m_building", BindingFlags.Public | BindingFlags.Instance).GetValue(Singleton<TransportTool>.instance);
+        private ushort m_line => (ushort)typeof(TransportTool).GetField("m_line", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Singleton<TransportTool>.instance);
 
         public bool GetStopPosition(TransportInfo info, ushort segment, ushort building, ushort firstStop, ref Vector3 hitPos, out bool fixedPlatform)
         {
@@ -30,7 +31,7 @@ namespace SharedStopEnabler.StopSelection
 
             fixedPlatform = false;
 
-            if ((int)segment != 0) //hover segment
+            if ((int)segment != 0 && info.m_transportType != TransportInfo.TransportType.Pedestrian) //hover segment
             {
                 if ((netManager.m_segments.m_buffer[(int)segment].m_flags & NetSegment.Flags.Untouchable) != NetSegment.Flags.None)  //rewrite flagset extension method
                 {
@@ -103,7 +104,7 @@ namespace SharedStopEnabler.StopSelection
                 }
             }
 
-            if (!alternateMode && (int)building != 0)
+            if (!alternateMode && (int)building != 0 && info.m_transportType != TransportInfo.TransportType.Pedestrian)
             {
                 ushort parentBuilding = 0;
                 if ((buildingManager.m_buildings.m_buffer[(int)building].m_flags & Building.Flags.Untouchable) != Building.Flags.None)
@@ -171,6 +172,72 @@ namespace SharedStopEnabler.StopSelection
                         return num2 != 1000000;
                     }
                 }
+            }
+            Vector3 vector6 = Vector3.zero;
+            float num13 = 0f;
+            uint num14 = 0U;
+            int num15;
+            if (segment != 0 && !netManager.m_segments.m_buffer[(int)segment].GetClosestLanePosition(hitPos, NetInfo.LaneType.Pedestrian, VehicleInfo.VehicleType.None, VehicleInfo.VehicleType.None, out vector6, out num14, out num15, out num13))
+            {
+                num14 = 0U;
+                if ((netManager.m_segments.m_buffer[(int)segment].m_flags & NetSegment.Flags.Untouchable) != NetSegment.Flags.None && building == 0)
+                {
+                    building = NetSegment.FindOwnerBuilding(segment, 363f);
+                }
+            }
+            if (building != 0)
+            {
+                BuildingInfo info5 = buildingManager.m_buildings.m_buffer[(int)building].Info;
+                if (info5.m_hasPedestrianPaths)
+                {
+                    num14 = buildingManager.m_buildings.m_buffer[(int)building].FindLane(NetInfo.LaneType.Pedestrian, VehicleInfo.VehicleType.None, hitPos, out vector6, out num13);
+                }
+                if (num14 == 0U)
+                {
+                    Vector3 point2 = buildingManager.m_buildings.m_buffer[(int)building].CalculateSidewalkPosition();
+                    num14 = buildingManager.m_buildings.m_buffer[(int)building].FindAccessLane(NetInfo.LaneType.Pedestrian, VehicleInfo.VehicleType.None, point2, out vector6, out num13);
+                }
+            }
+            if (num14 != 0U)
+            {
+                if (num13 < 0.003921569f)
+                {
+                    num13 = 0.003921569f;
+                    vector6 = netManager.m_lanes.m_buffer[(int)((UIntPtr)num14)].CalculatePosition(num13);
+                }
+                else if (num13 > 0.996078432f)
+                {
+                    num13 = 0.996078432f;
+                    vector6 = netManager.m_lanes.m_buffer[(int)((UIntPtr)num14)].CalculatePosition(num13);
+                }
+                if (this.m_line != 0)
+                {
+                    firstStop = transportManager.m_lines.m_buffer[(int)this.m_line].m_stops;
+                    ushort num16 = firstStop;
+                    int num17 = 0;
+                    while (num16 != 0)
+                    {
+                        if (netManager.m_nodes.m_buffer[(int)num16].m_lane == num14)
+                        {
+                            hitPos = netManager.m_nodes.m_buffer[(int)num16].m_position;
+                            fixedPlatform = true;
+                            return true;
+                        }
+                        num16 = TransportLine.GetNextStop(num16);
+                        if (num16 == firstStop)
+                        {
+                            break;
+                        }
+                        if (++num17 >= 32768)
+                        {
+                            CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + Environment.StackTrace);
+                            break;
+                        }
+                    }
+                }
+                hitPos = vector6;
+                fixedPlatform = true;
+                return true;
             }
             return false;
         }

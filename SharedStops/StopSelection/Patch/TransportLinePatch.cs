@@ -17,7 +17,7 @@ namespace SharedStopEnabler.StopSelection.Patch
     //{
     //    static bool Prefix()
     //    {
-    //        Log.Debug($"Transportline {lineID} segment: {segment}, stops {stops}, laststop {laststop}");
+    //        //Log.Debug($"Transportline {lineID} segment: {segment}, stops {stops}, laststop {laststop}");
     //        return true;
     //    }
 
@@ -36,12 +36,14 @@ namespace SharedStopEnabler.StopSelection.Patch
             __state = false;
 
             Log.Debug($"segment: {segment}");
-            
+            //fixedPlatform = false;
+            //return true;
 
             if (Singleton<NetManager>.instance.m_segments.m_buffer[(int)segment].HasSharedStop(segment, info.m_stopFlag))
-            {         
+            {
                 __state = true;
             }
+
 
             __result = Singleton<SharedStopsTool>.instance.GetStopPosition(info, segment, building, firstStop, ref hitPos, out fixedPlatform);
             return false;

@@ -31,6 +31,38 @@ namespace SharedStopEnabler.StopSelection
 
             fixedPlatform = false;
 
+            if ((int)segment != 0 && alternateMode && !additionalStopsSet)  //set additional stoptypes
+            {
+                additionalStopsSet = true;
+                additionalStopsRemoved = false;
+                for (int i = 1; i < netManager.m_segments.m_buffer[(int)segment].Info.m_lanes.Length - 2; i++)
+                {
+                    uint index = (uint)netManager.m_segments.m_buffer[(int)segment].Info.m_sortedLanes[i];
+                    if (IsValidLane(segment, (uint)i, info))
+                    {
+                        Log.Debug($"SharedStops calculate new stoptypes: {segment}, Stopflag: {info.m_stopFlag}, hitpos. {hitPos.x} {hitPos.y} {hitPos.z}, vehicleType: {info.m_vehicleType}");
+                        netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_stopType |= info.m_vehicleType;
+
+                    }
+                }
+            }
+
+            if ((int)segment != 0 && !alternateMode && !additionalStopsRemoved)  //remove additional stoptypes
+            {
+                additionalStopsRemoved = true;
+                additionalStopsSet = false;
+                if (netManager.m_segments.m_buffer[(int)segment].HasStops(segment)) goto Main;
+                for (int i = 1; i < netManager.m_segments.m_buffer[(int)segment].Info.m_lanes.Length - 2; i++)
+                {
+                    uint index = (uint)netManager.m_segments.m_buffer[(int)segment].Info.m_sortedLanes[i];
+                    if ((netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_stopType & info.m_vehicleType) == info.m_vehicleType)
+                    {
+                        Log.Debug($"SharedStops remove new stoptypes: {segment}, Stopflag: {info.m_stopFlag}, hitpos. {hitPos.x} {hitPos.y} {hitPos.z}, vehicleType: {info.m_vehicleType}");
+                        netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_stopType &= ~info.m_vehicleType;
+                    }
+                }
+            }
+        Main:
             if ((int)segment != 0 && info.m_transportType != TransportInfo.TransportType.Pedestrian) //hover segment
             {
                 if ((netManager.m_segments.m_buffer[(int)segment].m_flags & NetSegment.Flags.Untouchable) != NetSegment.Flags.None)  //rewrite flagset extension method
@@ -47,40 +79,7 @@ namespace SharedStopEnabler.StopSelection
                             building = (ushort)0;
                     }
                 }
-
-                if ((int)segment != 0 && alternateMode && !additionalStopsSet)  //set additional stoptypes
-                {
-                    additionalStopsSet = true;
-                    additionalStopsRemoved = false;
-                    for (int i = 1; i < netManager.m_segments.m_buffer[(int)segment].Info.m_lanes.Length - 2; i++)
-                    {
-                        uint index = (uint)netManager.m_segments.m_buffer[(int)segment].Info.m_sortedLanes[i];
-                        if (IsValidLane(segment, (uint)i, info))
-                        {
-                            Log.Debug($"SharedStops calculate new stoptypes: {segment}, Stopflag: {info.m_stopFlag}, hitpos. {hitPos.x} {hitPos.y} {hitPos.z}, vehicleType: {info.m_vehicleType}");
-                            netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_stopType |= info.m_vehicleType;
-
-                        }
-                    }
-                }
-
-                if ((int)segment != 0 && !alternateMode && !additionalStopsRemoved)  //remove additional stoptypes
-                {
-                    additionalStopsRemoved = true;
-                    additionalStopsSet = false;
-                    if (netManager.m_segments.m_buffer[(int)segment].HasStops(segment)) goto Main;
-                    for (int i = 1; i < netManager.m_segments.m_buffer[(int)segment].Info.m_lanes.Length - 2; i++)
-                    {
-                        uint index = (uint)netManager.m_segments.m_buffer[(int)segment].Info.m_sortedLanes[i];
-                        if ((netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_stopType & info.m_vehicleType) == info.m_vehicleType)
-                        {
-                            Log.Debug($"SharedStops remove new stoptypes: {segment}, Stopflag: {info.m_stopFlag}, hitpos. {hitPos.x} {hitPos.y} {hitPos.z}, vehicleType: {info.m_vehicleType}");
-                            netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_stopType &= ~info.m_vehicleType;
-                        }
-                    }
-                }
-
-            Main:
+           
                 if ((int)segment != 0 && netManager.m_segments.m_buffer[(int)segment].GetClosestLanePosition(hitPos, NetInfo.LaneType.Pedestrian, VehicleInfo.VehicleType.None, info.m_vehicleType, out Vector3 closestPedestrianLane, out uint laneid1, out _, out _))
                 {
                     if (netManager.m_segments.m_buffer[(int)segment].GetClosestLanePosition(closestPedestrianLane, NetInfo.LaneType.Vehicle | NetInfo.LaneType.TransportVehicle, info.m_vehicleType, out Vector3 position2, out uint laneID2, out int laneIndex2, out float laneOffset2))
@@ -99,10 +98,12 @@ namespace SharedStopEnabler.StopSelection
                         netManager.m_lanes.m_buffer[laneID2].CalculateStopPositionAndDirection(0.5019608f, stopOffset, out hitPos, out Vector3 direction);
                         //Log.Debug($"pedesrianlane: {laneid1}, vehiclelane: {laneID2}, stoppos: {hitPos}");
                         fixedPlatform = true;
+                        Log.Debug("returned true on line 102");
                         return true;
                     }
                 }
             }
+            //if (alternateMode && (int)building != 0) return false;
 
             if (!alternateMode && (int)building != 0 && info.m_transportType != TransportInfo.TransportType.Pedestrian)
             {
@@ -114,6 +115,7 @@ namespace SharedStopEnabler.StopSelection
                 if (this.m_building != 0 && (int)firstStop != 0 && (this.m_building == (int)building || this.m_building == (int)parentBuilding))  //seems to never be called?
                 {
                     hitPos = netManager.m_nodes.m_buffer[(int)firstStop].m_position;
+                    Log.Debug("returned true on line 119");
                     return true;
                 }
                 VehicleInfo randomVehicleInfo = Singleton<VehicleManager>.instance.GetRandomVehicleInfo(ref Singleton<SimulationManager>.instance.m_randomizer, info.m_class.m_service, info.m_class.m_subService, info.m_class.m_level);
@@ -162,6 +164,7 @@ namespace SharedStopEnabler.StopSelection
                                         if ((int)building == (int)ownerBuilding)
                                         {
                                             hitPos = position;
+                                            Log.Debug("returned true on line 168");
                                             return true;
                                         }
                                     }
@@ -172,6 +175,7 @@ namespace SharedStopEnabler.StopSelection
                         return num2 != 1000000;
                     }
                 }
+                return false;
             }
             Vector3 vector6 = Vector3.zero;
             float num13 = 0f;
@@ -221,6 +225,7 @@ namespace SharedStopEnabler.StopSelection
                         {
                             hitPos = netManager.m_nodes.m_buffer[(int)num16].m_position;
                             fixedPlatform = true;
+                            Log.Debug("returned true on line 229");
                             return true;
                         }
                         num16 = TransportLine.GetNextStop(num16);
@@ -237,6 +242,7 @@ namespace SharedStopEnabler.StopSelection
                 }
                 hitPos = vector6;
                 fixedPlatform = true;
+                Log.Debug("returned true on line 246");
                 return true;
             }
             return false;

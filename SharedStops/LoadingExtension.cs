@@ -5,16 +5,14 @@ using UnityEngine;
 using SharedStopEnabler.StopSelection;
 using SharedStopEnabler.Util;
 using System;
-using HarmonyLib;
 using System.Reflection;
 using ColossalFramework;
+using CitiesHarmony.API;
 
 namespace SharedStopEnabler
 {
     public class SharedStopsLoadingExtension : LoadingExtensionBase
     {
-        Harmony harmony = new Harmony("com.codebard.sharedstops");
-
         public override void OnLevelLoaded(LoadMode mode)
         {
             Log.Info($"OnLevelLoaded: {mode}");
@@ -25,9 +23,11 @@ namespace SharedStopEnabler
                 if (!Singleton<SharedStopsTool>.exists)
                     Singleton<SharedStopsTool>.Ensure();
 
-                var assembly = Assembly.GetExecutingAssembly();
-                harmony.PatchAll(assembly);
-                Log.Info($"Patches deployed");
+                if (HarmonyHelper.IsHarmonyInstalled)
+                {
+                    Patcher.PatchAll();
+                    Log.Info($"Patches deployed");
+                }
             }
             catch (Exception e)
             {
@@ -48,8 +48,11 @@ namespace SharedStopEnabler
         {
             try
             {
-                harmony.UnpatchAll("com.codebard.sharedstops");
-                Log.Info($"patching reverted");
+                if (HarmonyHelper.IsHarmonyInstalled)
+                {
+                    Patcher.UnpatchAll();
+                    Log.Info($"patching reverted");
+                }
             }
             catch (Exception e)
             {

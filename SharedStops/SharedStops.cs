@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using CitiesHarmony.API;
 using ICities;
 using SharedStopEnabler.Util;
 using UnityEngine;
@@ -23,6 +24,7 @@ namespace SharedStopEnabler
         public void OnEnabled()
         {
             Log.Info($"SharedStops enabled {ModVersion}");
+            HarmonyHelper.EnsureHarmonyInstalled();
         }
 
         public void OnDisabled()

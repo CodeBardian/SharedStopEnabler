@@ -34,9 +34,6 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="0Harmony, Version=2.0.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Lib.Harmony.2.0.1\lib\net35\0Harmony.dll</HintPath>
-    </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>..\required_assemblies\Assembly-CSharp.dll</HintPath>
     </Reference>
@@ -68,9 +65,12 @@
     <Compile Include="StopSelection\SharedStopsTool.cs" />
     <Compile Include="StopSelection\StopSelectionExtensions.cs" />
     <Compile Include="Util\Log.cs" />
+    <Compile Include="Util\Patcher.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <PackageReference Include="CitiesHarmony.API">
+      <Version>1.0.4</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup Condition=" '$(OS)' == 'Windows_NT' ">

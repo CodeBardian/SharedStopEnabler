@@ -21,6 +21,43 @@ namespace SharedStopEnabler.StopSelection
         private int m_building => (int)typeof(TransportTool).GetField("m_building", BindingFlags.Public | BindingFlags.Instance).GetValue(Singleton<TransportTool>.instance);
         private ushort m_line => (ushort)typeof(TransportTool).GetField("m_line", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Singleton<TransportTool>.instance);
 
+        public void Start()
+        {
+            try
+            {
+                ElevatedStops.EnableElevatedStops();
+                SetLaneProps("Tram Stop");
+                Log.Info($"successful startup");
+            }
+            catch (Exception e)
+            {
+                Log.Error($"Failed on startup {e}");
+            }
+        }
+
+        private void SetLaneProps(string propName)
+        {
+            for (uint i = 0; i < PrefabCollection<NetInfo>.LoadedCount(); i++)
+            {
+                var netInfo = PrefabCollection<NetInfo>.GetLoaded(i);
+
+                if (netInfo == null || netInfo.m_lanes == null || !netInfo.m_hasPedestrianLanes) continue;
+
+                foreach (NetInfo.Lane lane in netInfo.m_lanes)
+                {
+                    if (lane == null || lane.m_laneType != NetInfo.LaneType.Pedestrian || lane.m_laneProps == null || lane.m_laneProps.m_props == null ) continue;
+
+                    foreach (NetLaneProps.Prop laneProp in lane.m_laneProps.m_props)
+                    {
+                        if (laneProp != null && laneProp.m_prop != null && laneProp.m_prop.name == propName)
+                        {
+                            laneProp.m_flagsForbidden |= NetLane.Flags.Stop;
+                        }
+                    }
+                }
+            }
+        }
+
         public bool GetStopPosition(out bool skipOriginal, TransportInfo info, ushort segment, ushort building, ushort firstStop, ref Vector3 hitPos, out bool fixedPlatform)
         {
             bool alternateMode = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);

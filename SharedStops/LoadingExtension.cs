@@ -26,8 +26,9 @@ namespace SharedStopEnabler
                 if (HarmonyHelper.IsHarmonyInstalled)
                 {
                     Patcher.PatchAll();
-                    Log.Info($"Patches deployed");
+                    Log.Info("Patches deployed");
                 }
+                else Log.Info("Harmony not found");
             }
             catch (Exception e)
             {
@@ -51,15 +52,16 @@ namespace SharedStopEnabler
                 if (HarmonyHelper.IsHarmonyInstalled)
                 {
                     Patcher.UnpatchAll();
-                    Log.Info($"patching reverted");
+                    Log.Info("patching reverted");
                 }
+                else Log.Info("Harmony not found");
             }
             catch (Exception e)
             {
                 Log.Error($"Failed reverting patches: {e}");
             }
             base.OnLevelUnloading();
-            Log.Info($"level unloaded");
+            Log.Info("level unloaded");
 
         }
 
@@ -120,25 +122,6 @@ namespace SharedStopEnabler
             info.m_lanes[info.m_sortedLanes[0]].m_stopOffset = 0f;
             info.m_lanes[info.m_sortedLanes[info.m_sortedLanes.Length - 1]].m_stopType = secondStopType;
             info.m_lanes[info.m_sortedLanes[info.m_sortedLanes.Length - 1]].m_stopOffset = 0f;
-        }
-
-        private void RemoveLaneProp(NetInfo netInfo, string propName)
-        {
-            if (netInfo == null || netInfo.m_lanes == null) return;
-
-            foreach (NetInfo.Lane lane in netInfo.m_lanes)
-            {
-                if (lane == null || lane.m_laneProps == null || lane.m_laneProps.m_props == null) continue;
-
-                foreach (NetLaneProps.Prop laneProp in lane.m_laneProps.m_props)
-                {
-                    if (laneProp != null && laneProp.m_prop != null && laneProp.m_prop.name == propName)
-                    {
-                        laneProp.m_prop = null;
-                        laneProp.m_finalProp = null;
-                    }
-                }
-            }
         }
     }
 }

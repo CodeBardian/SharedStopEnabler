@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using UnityEngine;
 
@@ -36,17 +37,15 @@ namespace SharedStopEnabler.StopSelection.Patch
             __state = false;
 
             Log.Debug($"segment: {segment}");
-            //fixedPlatform = false;
-            //return true;
 
             if (Singleton<NetManager>.instance.m_segments.m_buffer[(int)segment].HasSharedStop(segment, info.m_stopFlag))
             {
                 __state = true;
             }
 
+            __result = Singleton<SharedStopsTool>.instance.GetStopPosition(out bool skipOriginal, info, segment, building, firstStop, ref hitPos, out fixedPlatform);
 
-            __result = Singleton<SharedStopsTool>.instance.GetStopPosition(info, segment, building, firstStop, ref hitPos, out fixedPlatform);
-            return false;
+            return !skipOriginal;
         }
 
         static void Postfix(bool __state, ref bool __result)

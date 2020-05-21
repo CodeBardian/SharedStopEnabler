@@ -13,34 +13,100 @@ using UnityEngine;
 
 namespace SharedStopEnabler.StopSelection.Patch
 {
-    //[HarmonyPatch(typeof(TransportTool), "AddStop")]
-    //class TransportLinePatch1
-    //{
-    //    static bool Prefix()
-    //    {
-    //        //Log.Debug($"Transportline {lineID} segment: {segment}, stops {stops}, laststop {laststop}");
-    //        return true;
-    //    }
+    [HarmonyPatch(typeof(TransportTool), "RemoveStop")]
+    class TransportLinePatch1
+    {
+        static bool Prefix()
+        {
+            Log.Debug($"Transportline removed stop");
+            return true;
+        }
 
-    //    static void Postfix(ref IEnumerator __result)
-    //    {
-    //        Log.Debug("Transportline added stop");
-    //    }
-    //}
+        static void Postfix(ref IEnumerator __result, TransportTool __instance, TransportInfo ___m_prefab, Ray ___m_mouseRay, float ___m_mouseRayLength, ushort ___m_lastEditLine)
+        {
+            try
+            {
+                ToolBase.RaycastOutput raycastOutput = RayCastWrapper.RayCast(__instance, ___m_prefab, ___m_mouseRay, ___m_mouseRayLength);
+                if (raycastOutput.m_netSegment != 0 && ___m_lastEditLine != 0)
+                {
+                    Singleton<SharedStopsTool>.instance.RemoveSharedStop(raycastOutput.m_netSegment, (SharedStopsTool.SharedStopTypes)Enum.Parse(typeof(SharedStopsTool.SharedStopTypes), ___m_prefab.m_transportType.ToString()), ___m_lastEditLine);
+                    Log.Debug($"Transportline removing stop: {raycastOutput.m_netSegment}");
+                }
+            }
+            catch (Exception e)
+            {
+                Log.Error($"SSE: Exeption on removing stop {e}");
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(TransportTool), "CancelPrevStop")]
+    class TransportLinePatch3
+    {
+        static bool Prefix()
+        {
+            Log.Debug($"Transportline canceled stop");
+            return true;
+        }
+
+        static void Postfix(ref IEnumerator __result, TransportTool __instance, TransportInfo ___m_prefab, Ray ___m_mouseRay, float ___m_mouseRayLength, ushort ___m_lastEditLine)
+        {
+            try
+            {
+                ToolBase.RaycastOutput raycastOutput = RayCastWrapper.RayCast(__instance, ___m_prefab, ___m_mouseRay, ___m_mouseRayLength);
+                if (raycastOutput.m_netSegment != 0 && ___m_lastEditLine != 0)
+                {
+                    Singleton<SharedStopsTool>.instance.RemoveSharedStop(raycastOutput.m_netSegment, (SharedStopsTool.SharedStopTypes)Enum.Parse(typeof(SharedStopsTool.SharedStopTypes), ___m_prefab.m_transportType.ToString()), ___m_lastEditLine);
+                    Log.Debug($"Transportline canceling stop: {raycastOutput.m_netSegment}");
+                }
+            }
+            catch (Exception e)
+            {
+                Log.Error($"SSE: Exeption on canceling stop {e}");
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(TransportTool), "MoveStop")]
+    class TransportLinePatch4
+    {
+        static bool Prefix()
+        {
+            Log.Debug($"Transportline moved stop");
+            return true;
+        }
+
+        static void Postfix(ref IEnumerator<bool> __result, TransportTool __instance, TransportInfo ___m_prefab, Ray ___m_mouseRay, float ___m_mouseRayLength, ushort ___m_lastEditLine)
+        {
+            try
+            {
+                Log.Debug($"SSE:  moved stop {__result}");
+                //ToolBase.RaycastOutput raycastOutput = RayCastWrapper.RayCast(__instance, ___m_prefab, ___m_mouseRay, ___m_mouseRayLength);
+                //if (raycastOutput.m_netSegment != 0 && ___m_lastEditLine != 0)
+                //{
+                //    Singleton<SharedStopsTool>.instance.RemoveSharedStop(raycastOutput.m_netSegment, (SharedStopsTool.SharedStopTypes)Enum.Parse(typeof(SharedStopsTool.SharedStopTypes), ___m_prefab.m_transportType.ToString()), ___m_lastEditLine);
+                //    Log.Debug($"Transportline moved stop: {raycastOutput.m_netSegment}");
+                //}
+            }
+            catch (Exception e)
+            {
+                Log.Error($"SSE: Exeption on moved stop {e}");
+            }
+        }
+    }
 
 
     [HarmonyPatch(typeof(TransportTool), "GetStopPosition")]
     class TransportToolPatch2
     {
-        static bool Prefix(out bool __state, ref bool __result, TransportInfo info, ushort segment, ushort building, ushort firstStop, ref Vector3 hitPos, out bool fixedPlatform)
+        static ushort lastSegment;
+        static bool Prefix(out ushort __state, ref bool __result, TransportInfo info, ushort segment, ushort building, ushort firstStop, ref Vector3 hitPos, out bool fixedPlatform)
         {
-            __state = false;
+            __state = 0;
 
-            Log.Debug($"segment: {segment}");
-
-            if (Singleton<NetManager>.instance.m_segments.m_buffer[(int)segment].HasSharedStop(segment, info.m_stopFlag))
+            if (Singleton<NetManager>.instance.m_segments.m_buffer[(int)segment].HasStops(segment))
             {
-                __state = true;
+                __state = segment;
             }
 
             __result = Singleton<SharedStopsTool>.instance.GetStopPosition(out bool skipOriginal, info, segment, building, firstStop, ref hitPos, out fixedPlatform);
@@ -48,12 +114,12 @@ namespace SharedStopEnabler.StopSelection.Patch
             return !skipOriginal;
         }
 
-        static void Postfix(bool __state, ref bool __result)
+        static void Postfix(ushort __state, ref bool __result, TransportInfo ___m_prefab, ushort ___m_line)
         {
-            if (__result && __state)
+            if (__result && __state != 0 && ___m_line != 0 && __state != lastSegment)
             {
-                //TODO: add sharedstop segemnt and remove props #2
-                Log.Debug("Created SharedStop");
+                lastSegment = __state;
+                Singleton<SharedStopsTool>.instance.AddSharedStop(__state, (SharedStopsTool.SharedStopTypes)Enum.Parse(typeof(SharedStopsTool.SharedStopTypes), ___m_prefab.m_transportType.ToString()), ___m_line);
             }
         }
     }

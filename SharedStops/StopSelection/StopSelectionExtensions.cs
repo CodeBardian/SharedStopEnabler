@@ -26,7 +26,7 @@ namespace SharedStopEnabler.StopSelection
             bool hasStops = netSegment.HasStops(segment);
             NetSegment.Flags existingFlags = Singleton<NetManager>.instance.m_segments.m_buffer[(int)segment].m_flags;
             Log.Debug($"hasStops: {hasStops}, existingflag: {existingFlags}, stopflag: {(NetSegment.Flags)stopFlag}");
-            return hasStops && (existingFlags & (NetSegment.Flags)stopFlag) != (NetSegment.Flags)stopFlag;
+            return hasStops && (existingFlags & (NetSegment.Flags)stopFlag) == (NetSegment.Flags)stopFlag;
         }
     }
 }

@@ -24,9 +24,8 @@ namespace SharedStopEnabler.StopSelection
             None = 0,
             Bus = 1,
             Tram = 2,
-            CableCar = 4,
-            TouristBus = 8,
-            Trolleybus = 16,
+            TouristBus = 4,
+            Trolleybus = 8,
         }
 
         private int m_building => (int)typeof(TransportTool).GetField("m_building", BindingFlags.Public | BindingFlags.Instance).GetValue(Singleton<TransportTool>.instance);
@@ -64,33 +63,36 @@ namespace SharedStopEnabler.StopSelection
             }
         }
 
-        public void AddSharedStop(ushort segment, SharedStopTypes sharedStopTypes, ushort line)
+        public void AddSharedStop(ushort segment, SharedStopTypes sharedStopTypes, ushort line, NetInfo.Direction direction)
         {
             Log.Debug($"trying to add sharedsegment {segment}, {sharedStopTypes}, {line}");
             if (sharedStopSegments.Any(s => s.m_segment == segment))
             {
-                if (!sharedStopSegments[sharedStopSegments.FindIndex(s => s.m_segment == segment)].m_lines.Contains(line))
+                var sharedStopSegment = sharedStopSegments[sharedStopSegments.FindIndex(s => s.m_segment == segment)];
+                if (sharedStopSegment.m_lines.Where(g => g == line).ToList().Count < 2)
                 {
-                    sharedStopSegments[sharedStopSegments.FindIndex(s => s.m_segment == segment)].m_sharedStopTypes |= sharedStopTypes;
                     sharedStopSegments[sharedStopSegments.FindIndex(s => s.m_segment == segment)].m_lines.Add(line);
                 }
+                if (direction == NetInfo.Direction.Forward) sharedStopSegment.m_sharedStopTypesForward |= sharedStopTypes;
+                else if (direction == NetInfo.Direction.Backward) sharedStopSegment.m_sharedStopTypesBackward |= sharedStopTypes;
             }
             else 
             {
-                sharedStopSegments.Add(new SharedStopSegment(segment, sharedStopTypes, line));
-                Log.Debug($"add sharedsegment {segment}, {sharedStopSegments.Count}");
+                sharedStopSegments.Add(new SharedStopSegment(segment, sharedStopTypes, line, direction));
+                Log.Debug($"add sharedsegment {segment}, {sharedStopSegments.Count}, , direction: {direction}");
             }
                 
         }
 
-        public void RemoveSharedStop(ushort segment, SharedStopTypes sharedStopTypes, ushort line)
+        public void RemoveSharedStop(ushort segment, SharedStopTypes sharedStopTypes, ushort line, NetInfo.Direction direction)
         {
             if (sharedStopSegments.Any(s => s.m_segment == segment))
             {
                 var sharedStopSegment = sharedStopSegments[sharedStopSegments.FindIndex(s => s.m_segment == segment)];
                 Log.Debug($"found sharedsegment {sharedStopSegments.Count} {sharedStopSegment.m_lines.Count}");
-                sharedStopSegment.m_sharedStopTypes &= ~sharedStopTypes;
-                sharedStopSegment.m_lines.Remove(line);
+                if (direction == NetInfo.Direction.Forward) sharedStopSegment.m_sharedStopTypesForward &= ~sharedStopTypes;
+                else if (direction == NetInfo.Direction.Backward) sharedStopSegment.m_sharedStopTypesBackward &= ~sharedStopTypes;
+                sharedStopSegment.m_lines.Remove(line);               
                 if (sharedStopSegment.m_lines.Count == 0)
                 {
                     sharedStopSegments.Remove(sharedStopSegment);
@@ -108,6 +110,12 @@ namespace SharedStopEnabler.StopSelection
 
             skipOriginal = true;
             fixedPlatform = false;
+            var index1 = sharedStopSegments.FindIndex(s => s.m_segment == segment);
+            if (index1 != -1)
+            {
+                var sharedStopSegment = sharedStopSegments[index1];
+                Log.Debug($"sharedstoptypes {sharedStopSegment.m_sharedStopTypesForward}  {sharedStopSegment.m_sharedStopTypesBackward}");
+            }
 
             if (info.m_transportType == TransportInfo.TransportType.Pedestrian || (alternateMode && segment == 0 ))
             {

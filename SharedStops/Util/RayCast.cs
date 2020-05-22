@@ -20,10 +20,8 @@ namespace SharedStopEnabler.Util
                 m_ignoreSegmentFlags = ((___m_prefab.m_netService == ItemClass.Service.None) ? NetSegment.Flags.All : NetSegment.Flags.None),
                 m_ignoreBuildingFlags = ((___m_prefab.m_stationService == ItemClass.Service.None && ___m_prefab.m_transportType != TransportInfo.TransportType.Pedestrian) ? Building.Flags.All : Building.Flags.None)
             };
-            Log.Debug($"SSE: input set {__instance}");
             object[] parameters = new object[] { input, null };
             object result = typeof(ToolBase).GetMethod("RayCast", BindingFlags.Static | BindingFlags.NonPublic).Invoke(__instance, parameters);
-            Log.Debug($"SSE: invoke passed {result}");
             ToolBase.RaycastOutput raycastOutput = default;
             if ((bool)result)
                 raycastOutput = (ToolBase.RaycastOutput)parameters[1];

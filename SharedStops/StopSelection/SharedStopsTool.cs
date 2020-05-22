@@ -65,13 +65,13 @@ namespace SharedStopEnabler.StopSelection
 
         public void AddSharedStop(ushort segment, SharedStopTypes sharedStopTypes, ushort line, NetInfo.Direction direction)
         {
-            Log.Debug($"trying to add sharedsegment {segment}, {sharedStopTypes}, {line}");
             if (sharedStopSegments.Any(s => s.m_segment == segment))
             {
                 var sharedStopSegment = sharedStopSegments[sharedStopSegments.FindIndex(s => s.m_segment == segment)];
                 if (sharedStopSegment.m_lines.Where(g => g == line).ToList().Count < 2)
                 {
                     sharedStopSegments[sharedStopSegments.FindIndex(s => s.m_segment == segment)].m_lines.Add(line);
+                    Log.Debug($"add line to sharedsegment {segment}, {sharedStopTypes}, {line}, {direction}");
                 }
                 if (direction == NetInfo.Direction.Forward) sharedStopSegment.m_sharedStopTypesForward |= sharedStopTypes;
                 else if (direction == NetInfo.Direction.Backward) sharedStopSegment.m_sharedStopTypesBackward |= sharedStopTypes;
@@ -79,7 +79,7 @@ namespace SharedStopEnabler.StopSelection
             else 
             {
                 sharedStopSegments.Add(new SharedStopSegment(segment, sharedStopTypes, line, direction));
-                Log.Debug($"add sharedsegment {segment}, {sharedStopSegments.Count}, , direction: {direction}");
+                Log.Debug($"add sharedsegment {segment}, {sharedStopSegments.Count}, direction: {direction}");
             }
                 
         }
@@ -89,10 +89,10 @@ namespace SharedStopEnabler.StopSelection
             if (sharedStopSegments.Any(s => s.m_segment == segment))
             {
                 var sharedStopSegment = sharedStopSegments[sharedStopSegments.FindIndex(s => s.m_segment == segment)];
-                Log.Debug($"found sharedsegment {sharedStopSegments.Count} {sharedStopSegment.m_lines.Count}");
                 if (direction == NetInfo.Direction.Forward) sharedStopSegment.m_sharedStopTypesForward &= ~sharedStopTypes;
                 else if (direction == NetInfo.Direction.Backward) sharedStopSegment.m_sharedStopTypesBackward &= ~sharedStopTypes;
-                sharedStopSegment.m_lines.Remove(line);               
+                sharedStopSegment.m_lines.Remove(line);
+                Log.Debug($"removed line {line} on {segment}, {direction}");
                 if (sharedStopSegment.m_lines.Count == 0)
                 {
                     sharedStopSegments.Remove(sharedStopSegment);

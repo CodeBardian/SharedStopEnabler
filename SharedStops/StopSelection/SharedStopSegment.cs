@@ -14,9 +14,8 @@ namespace SharedStopEnabler.StopSelection
         public NetInfo.Direction m_directionFlags { get; set; }
         public List<ushort> m_lines = new List<ushort>();
 
-    public SharedStopSegment(ushort segment, SharedStopsTool.SharedStopTypes sharedStopTypes, ushort line, NetInfo.Direction direction)
+        public SharedStopSegment(ushort segment, SharedStopsTool.SharedStopTypes sharedStopTypes, ushort line, NetInfo.Direction direction)
         {
-            Log.Debug($"create sharedsegment: {segment}, {sharedStopTypes}, {line}");
             m_segment = segment;
             m_directionFlags = direction;
             m_lines.Add(line);

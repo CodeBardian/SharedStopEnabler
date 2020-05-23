@@ -20,13 +20,13 @@ namespace SharedStopEnabler.StopSelection.Patch
         {
             try
             {
-                ToolBase.RaycastOutput raycastOutput = RayCastWrapper.RayCast(__instance, ___m_prefab, ___m_mouseRay, ___m_mouseRayLength);
+                ToolBase.RaycastOutput raycastOutput = RayCastWrapper.RayCast(__instance, ___m_prefab, ___m_mouseRay, ___m_mouseRayLength);              
                 if (raycastOutput.m_netSegment != 0 && ___m_lastEditLine != 0)
                 {
-                    if (Singleton<NetManager>.instance.m_segments.m_buffer[(int)raycastOutput.m_netSegment].GetClosestLanePosition(___m_hitPosition, NetInfo.LaneType.Vehicle, ___m_prefab.m_vehicleType, out _, out _, out int laneindex, out _))
+                    if (Singleton<NetManager>.instance.m_segments.m_buffer[(int)raycastOutput.m_netSegment].GetClosestLanePosition(___m_hitPosition, NetInfo.LaneType.Vehicle, ___m_prefab.m_vehicleType, out _, out uint laneID, out int laneindex, out _))
                     {
                         NetInfo.Direction direction = Singleton<NetManager>.instance.m_segments.m_buffer[(int)raycastOutput.m_netSegment].Info.m_lanes[laneindex].m_direction;
-                        Singleton<SharedStopsTool>.instance.RemoveSharedStop(raycastOutput.m_netSegment, (SharedStopsTool.SharedStopTypes)Enum.Parse(typeof(SharedStopsTool.SharedStopTypes), ___m_prefab.m_transportType.ToString()), ___m_lastEditLine, direction);
+                        Singleton<SharedStopsTool>.instance.RemoveSharedStop(raycastOutput.m_netSegment, (SharedStopSegment.SharedStopTypes)Enum.Parse(typeof(SharedStopSegment.SharedStopTypes), ___m_prefab.m_transportType.ToString()), ___m_lastEditLine, direction);
                     }
                 }
             }
@@ -50,7 +50,7 @@ namespace SharedStopEnabler.StopSelection.Patch
                     if (Singleton<NetManager>.instance.m_segments.m_buffer[(int)raycastOutput.m_netSegment].GetClosestLanePosition(___m_hitPosition, NetInfo.LaneType.Vehicle, ___m_prefab.m_vehicleType, out _, out _, out int laneindex, out _))
                     {
                         NetInfo.Direction direction = Singleton<NetManager>.instance.m_segments.m_buffer[(int)raycastOutput.m_netSegment].Info.m_lanes[laneindex].m_direction;
-                        Singleton<SharedStopsTool>.instance.RemoveSharedStop(raycastOutput.m_netSegment, (SharedStopsTool.SharedStopTypes)Enum.Parse(typeof(SharedStopsTool.SharedStopTypes), ___m_prefab.m_transportType.ToString()), ___m_lastEditLine, direction);
+                        Singleton<SharedStopsTool>.instance.RemoveSharedStop(raycastOutput.m_netSegment, (SharedStopSegment.SharedStopTypes)Enum.Parse(typeof(SharedStopSegment.SharedStopTypes), ___m_prefab.m_transportType.ToString()), ___m_lastEditLine, direction);
                     }
                 }
             }
@@ -68,20 +68,19 @@ namespace SharedStopEnabler.StopSelection.Patch
         {
             try
             {
-                //TODO: Check if move stop is canceled
                 Log.Debug($"SSE:  moved stop {__result.Current}");
-                if (__result.Current)
-                {
+                //if (__result.Current)
+                //{
                     ToolBase.RaycastOutput raycastOutput = RayCastWrapper.RayCast(__instance, ___m_prefab, ___m_mouseRay, ___m_mouseRayLength);
                     if (raycastOutput.m_netSegment != 0 && ___m_lastEditLine != 0)
                     {
                         if (Singleton<NetManager>.instance.m_segments.m_buffer[(int)raycastOutput.m_netSegment].GetClosestLanePosition(___m_hitPosition, NetInfo.LaneType.Vehicle, ___m_prefab.m_vehicleType, out _, out _, out int laneindex, out _))
                         {
                             NetInfo.Direction direction = Singleton<NetManager>.instance.m_segments.m_buffer[(int)raycastOutput.m_netSegment].Info.m_lanes[laneindex].m_direction;
-                            Singleton<SharedStopsTool>.instance.AddSharedStop(raycastOutput.m_netSegment, (SharedStopsTool.SharedStopTypes)Enum.Parse(typeof(SharedStopsTool.SharedStopTypes), ___m_prefab.m_transportType.ToString()), ___m_lastEditLine, direction);
+                            Singleton<SharedStopsTool>.instance.AddSharedStop(raycastOutput.m_netSegment, (SharedStopSegment.SharedStopTypes)Enum.Parse(typeof(SharedStopSegment.SharedStopTypes), ___m_prefab.m_transportType.ToString()), ___m_lastEditLine, direction);
                         }
                     }
-                }
+                //}
             }
             catch (Exception e)
             {
@@ -97,14 +96,15 @@ namespace SharedStopEnabler.StopSelection.Patch
         {
             try
             {
+                var netManager = Singleton<NetManager>.instance;
                 Log.Debug($"SSE: added stop");
                 ToolBase.RaycastOutput raycastOutput = RayCastWrapper.RayCast(__instance, ___m_prefab, ___m_mouseRay, ___m_mouseRayLength);
                 if (raycastOutput.m_netSegment != 0 && ___m_lastEditLine != 0)
                 {
-                    if (Singleton<NetManager>.instance.m_segments.m_buffer[(int)raycastOutput.m_netSegment].GetClosestLanePosition(___m_hitPosition, NetInfo.LaneType.Vehicle, ___m_prefab.m_vehicleType, out _, out _, out int laneindex, out _))
+                    if (netManager.m_segments.m_buffer[(int)raycastOutput.m_netSegment].GetClosestLanePosition(___m_hitPosition, NetInfo.LaneType.Vehicle, ___m_prefab.m_vehicleType, out _, out uint laneID, out int laneindex, out _))
                     {
-                        NetInfo.Direction direction = Singleton<NetManager>.instance.m_segments.m_buffer[(int)raycastOutput.m_netSegment].Info.m_lanes[laneindex].m_direction;
-                        Singleton<SharedStopsTool>.instance.AddSharedStop(raycastOutput.m_netSegment, (SharedStopsTool.SharedStopTypes)Enum.Parse(typeof(SharedStopsTool.SharedStopTypes), ___m_prefab.m_transportType.ToString()), ___m_lastEditLine, direction);
+                        NetInfo.Direction direction = netManager.m_segments.m_buffer[(int)raycastOutput.m_netSegment].Info.m_lanes[laneindex].m_direction;
+                        Singleton<SharedStopsTool>.instance.AddSharedStop(raycastOutput.m_netSegment, (SharedStopSegment.SharedStopTypes)Enum.Parse(typeof(SharedStopSegment.SharedStopTypes), ___m_prefab.m_transportType.ToString()), ___m_lastEditLine, direction);
                     }
                 }
             }
@@ -119,15 +119,8 @@ namespace SharedStopEnabler.StopSelection.Patch
     [HarmonyPatch(typeof(TransportTool), "GetStopPosition")]
     class TransportToolPatch2
     {
-        static bool Prefix(out ushort __state, ref bool __result, TransportInfo info, ushort segment, ushort building, ushort firstStop, ref Vector3 hitPos, out bool fixedPlatform)
+        static bool Prefix(ref bool __result, TransportInfo info, ushort segment, ushort building, ushort firstStop, ref Vector3 hitPos, out bool fixedPlatform)
         {
-            __state = 0;
-
-            if (Singleton<NetManager>.instance.m_segments.m_buffer[(int)segment].HasStops(segment))
-            {
-                __state = segment;
-            }
-
             __result = Singleton<SharedStopsTool>.instance.GetStopPosition(out bool skipOriginal, info, segment, building, firstStop, ref hitPos, out fixedPlatform);
 
             return !skipOriginal;

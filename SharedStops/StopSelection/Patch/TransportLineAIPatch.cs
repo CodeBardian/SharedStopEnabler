@@ -66,7 +66,8 @@ namespace SharedStopEnabler.StopSelection.Patch
 			if (oldflags != flags && data.IsSharedStop((int)segmentID))
 			{
 				var index = Singleton<SharedStopsTool>.instance.sharedStopSegments.FindIndex(s => s.m_segment == segmentID);
-				Singleton<SharedStopsTool>.instance.sharedStopSegments[index].UpdateStopFlags(out NetSegment.Flags stopflags);
+				var inverted = (flags & NetSegment.Flags.Invert) == NetSegment.Flags.Invert;
+				Singleton<SharedStopsTool>.instance.sharedStopSegments[index].UpdateStopFlags(inverted, out NetSegment.Flags stopflags);
 				data.m_flags = flags;
 				data.m_flags |= stopflags;
 				Log.Debug($"oldflags {oldflags} newflagsSS {data.m_flags}");

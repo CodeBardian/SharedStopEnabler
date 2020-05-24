@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SharedStopEnabler.Util;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +7,7 @@ using UnityEngine;
 
 namespace SharedStopEnabler.StopSelection
 {
-    static class ElevatedStops
+    static class StopsUtil
     {
         public static void EnableElevatedStops()
         {
@@ -60,6 +61,58 @@ namespace SharedStopEnabler.StopSelection
             info.m_lanes[info.m_sortedLanes[0]].m_stopOffset = 0f;
             info.m_lanes[info.m_sortedLanes[info.m_sortedLanes.Length - 1]].m_stopType = secondStopType;
             info.m_lanes[info.m_sortedLanes[info.m_sortedLanes.Length - 1]].m_stopOffset = 0f;
+        }
+
+        public static void ReplaceLaneProp(string original, string replacement)
+        {
+            for (uint i = 0; i < PrefabCollection<NetInfo>.LoadedCount(); i++)
+            {
+                var netInfo = PrefabCollection<NetInfo>.GetLoaded(i);
+                if (netInfo == null)
+                {
+                    Log.Info("SSE: The name '" + netInfo + "'does not belong to a loaded net!");
+                    return;
+                }
+                if (!netInfo.m_hasPedestrianLanes) continue;
+
+                var replacementProp = PrefabCollection<PropInfo>.FindLoaded(replacement);
+                if (replacementProp == null)
+                {
+                    Log.Info("SSE:The name '" + replacement + "'does not belong to a loaded prop!");
+                    return;
+                }
+
+                if (netInfo.m_lanes != null)
+                {
+                    foreach (var lane in netInfo.m_lanes)
+                    {
+                        if (lane != null && lane.m_laneProps != null && lane.m_laneProps.m_props != null)
+                        {
+                            foreach (var laneProp in lane.m_laneProps.m_props)
+                            {
+                                if (laneProp != null && laneProp.m_prop != null && laneProp.m_prop.name == original)
+                                {
+                                    laneProp.m_prop = replacementProp;
+                                    laneProp.m_finalProp = replacementProp;
+
+                                    switch (lane.m_laneProps.name)
+                                    {
+                                        case "Props - Gravel Left":
+                                            laneProp.m_angle = -90;
+                                            break;
+                                        case "Props - Gravel Right":
+                                            laneProp.m_angle = 90;
+                                            break;
+                                        case "Props - Basic Right":
+                                            laneProp.m_angle = 180;
+                                            break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

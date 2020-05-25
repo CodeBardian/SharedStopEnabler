@@ -63,6 +63,53 @@ namespace SharedStopEnabler.StopSelection
             info.m_lanes[info.m_sortedLanes[info.m_sortedLanes.Length - 1]].m_stopOffset = 0f;
         }
 
+        public static void InitLaneProps(string propName)
+        {
+            for (uint i = 0; i < PrefabCollection<NetInfo>.LoadedCount(); i++)
+            {
+                var netInfo = PrefabCollection<NetInfo>.GetLoaded(i);
+
+                if (netInfo == null || netInfo.m_lanes == null || !netInfo.m_hasPedestrianLanes) continue;
+
+                foreach (NetInfo.Segment segment in netInfo.m_segments)
+                {
+                    if (segment == null) continue;
+
+                    if (segment.m_lodMaterial.name.Contains("BusSide"))
+                    {
+                        Log.Info("found bus side");
+                        segment.m_backwardForbidden &= ~NetSegment.Flags.StopRight2;
+                        segment.m_forwardForbidden &= ~NetSegment.Flags.StopLeft2;
+                    }
+                    else if (segment.m_lodMaterial.name.Contains("TramAndBusStop"))
+                    {
+                        Log.Info("found tram and bus side");
+                        segment.m_backwardForbidden &= ~NetSegment.Flags.StopLeft2;
+                        segment.m_forwardForbidden &= ~NetSegment.Flags.StopRight2;
+                    }
+                    else if (segment.m_lodMaterial.name.Contains("BusBoth"))
+                    {
+                        Log.Info("found bus both");
+                        segment.m_backwardForbidden &= ~NetSegment.Flags.StopBoth2;
+                        segment.m_forwardForbidden &= ~NetSegment.Flags.StopBoth2;
+                    }
+                }
+
+                foreach (NetInfo.Lane lane in netInfo.m_lanes)
+                {
+                    if (lane == null || lane.m_laneType != NetInfo.LaneType.Pedestrian || lane.m_laneProps == null || lane.m_laneProps.m_props == null) continue;
+
+                    foreach (NetLaneProps.Prop laneProp in lane.m_laneProps.m_props)
+                    {
+                        if (laneProp != null && laneProp.m_prop != null && laneProp.m_prop.name == propName)
+                        {
+                            laneProp.m_flagsForbidden |= NetLane.Flags.Stop;
+                        }
+                    }
+                }
+            }
+        }
+
         public static void ReplaceLaneProp(string original, string replacement)
         {
             for (uint i = 0; i < PrefabCollection<NetInfo>.LoadedCount(); i++)

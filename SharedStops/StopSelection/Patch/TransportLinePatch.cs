@@ -102,7 +102,6 @@ namespace SharedStopEnabler.StopSelection.Patch
                 {
                     if (netManager.m_segments.m_buffer[(int)raycastOutput.m_netSegment].GetClosestLanePosition(___m_hitPosition, NetInfo.LaneType.Vehicle, ___m_prefab.m_vehicleType, out _, out uint laneID, out int laneindex, out _))
                     {
-                        Log.Debug($"SSE: added stop {raycastOutput.m_netSegment} {___m_lastEditLine}");
                         NetInfo.Direction direction = netManager.m_segments.m_buffer[(int)raycastOutput.m_netSegment].Info.m_lanes[laneindex].m_direction;
                         Singleton<SharedStopsTool>.instance.AddSharedStop(raycastOutput.m_netSegment, (SharedStopSegment.SharedStopTypes)Enum.Parse(typeof(SharedStopSegment.SharedStopTypes), ___m_prefab.m_transportType.ToString()), ___m_lastEditLine, direction);
                     }

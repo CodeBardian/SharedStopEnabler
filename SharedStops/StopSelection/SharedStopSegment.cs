@@ -173,11 +173,12 @@ namespace SharedStopEnabler.StopSelection
         public void UpdateStopFlags(bool inverted, out NetSegment.Flags stopflags)
         {
             stopflags = NetSegment.Flags.None;
+            Log.Debug($"forward {m_sharedStopTypesForward} backward {m_sharedStopTypesBackward} on segment {m_segment}");
             if ((m_sharedStopTypesBackward & SharedStopTypes.Bus) == SharedStopTypes.Bus || (m_sharedStopTypesBackward & SharedStopTypes.Trolleybus) == SharedStopTypes.Trolleybus || (m_sharedStopTypesBackward & SharedStopTypes.TouristBus) == SharedStopTypes.TouristBus)
             {
                 if (inverted) stopflags |= NetSegment.Flags.StopRight;
                 else stopflags |= NetSegment.Flags.StopLeft;
-                    
+
             }
             if ((m_sharedStopTypesForward & SharedStopTypes.Bus) == SharedStopTypes.Bus || (m_sharedStopTypesForward & SharedStopTypes.Trolleybus) == SharedStopTypes.Trolleybus || (m_sharedStopTypesForward & SharedStopTypes.TouristBus) == SharedStopTypes.TouristBus)
             {
@@ -196,8 +197,6 @@ namespace SharedStopEnabler.StopSelection
             }
             Log.Debug($"stopflag {stopflags}");
         }
-
     }
-
     //TODO: Set props/ init Props
 }

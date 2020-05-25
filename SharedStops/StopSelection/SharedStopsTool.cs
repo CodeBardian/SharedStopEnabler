@@ -26,12 +26,16 @@ namespace SharedStopEnabler.StopSelection
             {
                 StopsUtil.EnableElevatedStops();
                 sharedStopSegments = new List<SharedStopSegment>();
+
                 //StopsUtil.ReplaceLaneProp("Bus Stop Small", "1919887701.Clus_BusShelter01");
                 //StopsUtil.ReplaceLaneProp("Bus Stop Large", "1919887701.Clus_BusShelter05");
                 //StopsUtil.ReplaceLaneProp("Sightseeing Bus Stop Small", "1919887701.Clus_BusShelter01");
                 //StopsUtil.ReplaceLaneProp("Sightseeing Bus Stop Large", "1919887701.Clus_BusShelter05");
                 //StopsUtil.ReplaceLaneProp("Trolleybus Stop Small", "1919887701.Clus_BusShelter01");
                 //StopsUtil.ReplaceLaneProp("Trolleybus Stop Large", "1919887701.Clus_BusShelter05");
+
+                StopsUtil.InitLaneProps("Tram Stop");
+
                 Log.Info($"successful startup");
             }
             catch (Exception e)
@@ -42,16 +46,19 @@ namespace SharedStopEnabler.StopSelection
 
         public void AddSharedStop(ushort segment, SharedStopSegment.SharedStopTypes sharedStopTypes, ushort line, NetInfo.Direction direction)
         {
+            Log.Debug($"trying to add line to sharedsegment {segment}, {sharedStopTypes}, {line}, {direction}");
             if (sharedStopSegments.Any(s => s.m_segment == segment))
             {
                 var sharedStopSegment = sharedStopSegments[sharedStopSegments.FindIndex(s => s.m_segment == segment)];
-                if (sharedStopSegment.m_lines.Keys.Where(g => g == line).ToList().Count < 2)
+                if (sharedStopSegment.m_lines.Keys.Contains(line))
                 {
-                    sharedStopSegments[sharedStopSegments.FindIndex(s => s.m_segment == segment)].m_lines.Add(line, direction);
-                    Log.Debug($"add line to sharedsegment {segment}, {sharedStopTypes}, {line}, {direction}");
+                    sharedStopSegment.m_lines[line] |= direction;
+                    Log.Debug($"add to existing line {segment}, {sharedStopTypes}, {line}, {direction}");
                 }
+                else sharedStopSegment.m_lines.Add(line, direction);
                 if (direction == NetInfo.Direction.Forward) sharedStopSegment.m_sharedStopTypesForward |= sharedStopTypes;
                 else if (direction == NetInfo.Direction.Backward) sharedStopSegment.m_sharedStopTypesBackward |= sharedStopTypes;
+                Log.Debug($"forward {sharedStopSegment.m_sharedStopTypesForward}, backward{sharedStopSegment.m_sharedStopTypesBackward}");
                 //sharedStopSegment.UpdateProps(direction);
             }
             else 
@@ -60,7 +67,7 @@ namespace SharedStopEnabler.StopSelection
                 //newSegment.UpdateProps(direction);
                 sharedStopSegments.Add(newSegment);
                 Log.Debug($"add sharedsegment {segment}, {sharedStopSegments.Count}, direction: {direction}");
-            }             
+            }
         }
 
         public bool RemoveSharedStop(ushort segment, SharedStopSegment.SharedStopTypes sharedStopTypes, ushort line, NetInfo.Direction direction)
@@ -70,8 +77,14 @@ namespace SharedStopEnabler.StopSelection
                 var sharedStopSegment = sharedStopSegments[sharedStopSegments.FindIndex(s => s.m_segment == segment)];
                 if (direction == NetInfo.Direction.Forward) sharedStopSegment.m_sharedStopTypesForward &= ~sharedStopTypes;
                 else if (direction == NetInfo.Direction.Backward) sharedStopSegment.m_sharedStopTypesBackward &= ~sharedStopTypes;
-                sharedStopSegment.m_lines.Remove(line);
-                Log.Debug($"removed line {line} on {segment}, {direction} {sharedStopSegment.m_sharedStopTypesBackward}");
+                if (sharedStopSegment.m_lines.Keys.Contains(line)) //TODO: remove unnecessary checks
+                {
+                    sharedStopSegment.m_lines[line] &= ~direction;
+                    if (sharedStopSegment.m_lines[line] == NetInfo.Direction.None)
+                    {
+                        sharedStopSegment.m_lines.Remove(line);
+                    }
+                }
                 if (sharedStopSegment.m_lines.Count == 0)
                 {
                     Singleton<NetManager>.instance.m_segments.m_buffer[sharedStopSegment.m_segment].m_flags &= ~NetSegment.Flags.StopAll;
@@ -81,6 +94,11 @@ namespace SharedStopEnabler.StopSelection
                     return true;
                 }
                 //sharedStopSegment.UpdateProps(direction);
+                var flags = Singleton<NetManager>.instance.m_segments.m_buffer[sharedStopSegment.m_segment].m_flags;
+                var inverted = (flags & NetSegment.Flags.Invert) == NetSegment.Flags.Invert;
+                sharedStopSegment.UpdateStopFlags(inverted, out NetSegment.Flags stopflags);
+                flags &= ~(NetSegment.Flags.StopRight | NetSegment.Flags.StopLeft | NetSegment.Flags.StopRight2 | NetSegment.Flags.StopLeft2);
+                Singleton<NetManager>.instance.m_segments.m_buffer[sharedStopSegment.m_segment].m_flags = stopflags | flags;
                 return true;
             }
             return false;

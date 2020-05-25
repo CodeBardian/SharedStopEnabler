@@ -72,7 +72,7 @@
     <Compile Include="RedirectionFramework\Tuple.cs" />
     <Compile Include="SharedStops.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StopSelection\ElevatedStops.cs" />
+    <Compile Include="StopSelection\StopsUtil.cs" />
     <Compile Include="StopSelection\Patch\TransportLineAIPatch.cs" />
     <Compile Include="StopSelection\Patch\TransportLinePatch.cs" />
     <Compile Include="StopSelection\SharedStopSegment.cs" />

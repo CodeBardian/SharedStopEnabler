@@ -48,13 +48,10 @@ namespace SharedStopEnabler.StopSelection
                 {
                     //if ((Singleton<TransportManager>.instance.m_lines.m_buffer[line].m_flags & TransportLine.Flags.Selected) != TransportLine.Flags.Selected) continue;
                     var transportType = Singleton<TransportManager>.instance.m_lines.m_buffer[line].Info.m_transportType;
-                    Log.Debug($"Removed transport line {line}");
                     var sharedSegments = StopSelectionExtensions.FindSharedStopsByLine(line);
-                    Log.Debug($"Removed found sharedsegments {sharedSegments.Count}");
                     if (sharedSegments.Count != 0)
                     {
                         var direction = sharedSegments[0].m_lines[line];
-                        Log.Debug($"Removed direction {direction} on segment {sharedSegments[0].m_segment}");
                         Singleton<SharedStopsTool>.instance.RemoveSharedStop(sharedSegments[0].m_segment, (SharedStopSegment.SharedStopTypes)Enum.Parse(typeof(SharedStopSegment.SharedStopTypes), transportType.ToString()), line, direction);
                     }
                 }

@@ -68,33 +68,14 @@ namespace SharedStopEnabler.StopSelection.Patch
 				var index = Singleton<SharedStopsTool>.instance.sharedStopSegments.FindIndex(s => s.m_segment == segmentID);
 				var inverted = (flags & NetSegment.Flags.Invert) == NetSegment.Flags.Invert;
 				Singleton<SharedStopsTool>.instance.sharedStopSegments[index].UpdateStopFlags(inverted, out NetSegment.Flags stopflags);
+				//flags &= ~(NetSegment.Flags.StopRight | NetSegment.Flags.StopLeft | NetSegment.Flags.StopRight2 | NetSegment.Flags.StopLeft2);
 				data.m_flags = flags;
 				data.m_flags |= stopflags;
-				Log.Debug($"oldflags {oldflags} newflagsSS {data.m_flags}");
+				Log.Debug($"oldflags {oldflags} flags {flags} newflagsSharedStop {data.m_flags}");
 				return;
 			}
 			Log.Debug($"oldflags {oldflags} newflags {flags}");
 			data.m_flags = flags;
 		}
 	}
-
-	//[HarmonyPatch(typeof(RoadAI), "UpdateSegmentFlags")]
-	//class TransportLineAIPatch1
-	//{
-	//	static bool Prefix(ref NetSegment __state, ushort segmentID, ref NetSegment data)
-	//	{
-	//		__state = data;
-	//		//if (Singleton<NetManager>.instance.m_segments.m_buffer[segmentID].IsSharedStop(segmentID))
-	//		//{
-	//		//	return false;
-	//		//}
-	//		Log.Debug($"called update segment flags {data.m_flags}");
-	//		return true;
-	//	}
-
-	//	static void Postfix(ref NetSegment __state)
-	//	{
-	//		Log.Debug($"called update segment flags finished {__state.m_flags}");
-	//	}
-	//}
 }

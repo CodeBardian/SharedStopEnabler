@@ -12,21 +12,30 @@ namespace SharedStopEnabler.StopSelection
 {
     class SharedStopsTool : MonoBehaviour
     {
-        public NetSegment[] m_segments;
-        public NetSegment[] m_tempSegments;
+
+        public List<SharedStopSegment> sharedStopSegments;
 
         private bool additionalStopsSet = false;
         private bool additionalStopsRemoved = true;
 
         private int m_building => (int)typeof(TransportTool).GetField("m_building", BindingFlags.Public | BindingFlags.Instance).GetValue(Singleton<TransportTool>.instance);
-        private ushort m_line => (ushort)typeof(TransportTool).GetField("m_line", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Singleton<TransportTool>.instance);
 
         public void Start()
         {
             try
             {
-                ElevatedStops.EnableElevatedStops();
-                SetLaneProps("Tram Stop");
+                StopsUtil.EnableElevatedStops();
+                sharedStopSegments = new List<SharedStopSegment>();
+
+                //StopsUtil.ReplaceLaneProp("Bus Stop Small", "1919887701.Clus_BusShelter01");
+                //StopsUtil.ReplaceLaneProp("Bus Stop Large", "1919887701.Clus_BusShelter05");
+                //StopsUtil.ReplaceLaneProp("Sightseeing Bus Stop Small", "1919887701.Clus_BusShelter01");
+                //StopsUtil.ReplaceLaneProp("Sightseeing Bus Stop Large", "1919887701.Clus_BusShelter05");
+                //StopsUtil.ReplaceLaneProp("Trolleybus Stop Small", "1919887701.Clus_BusShelter01");
+                //StopsUtil.ReplaceLaneProp("Trolleybus Stop Large", "1919887701.Clus_BusShelter05");
+
+                StopsUtil.InitLaneProps("Tram Stop");
+
                 Log.Info($"successful startup");
             }
             catch (Exception e)
@@ -35,27 +44,64 @@ namespace SharedStopEnabler.StopSelection
             }
         }
 
-        private void SetLaneProps(string propName)
+        public void AddSharedStop(ushort segment, SharedStopSegment.SharedStopTypes sharedStopTypes, ushort line, NetInfo.Direction direction)
         {
-            for (uint i = 0; i < PrefabCollection<NetInfo>.LoadedCount(); i++)
+            Log.Debug($"trying to add line to sharedsegment {segment}, {sharedStopTypes}, {line}, {direction}");
+            if (sharedStopSegments.Any(s => s.m_segment == segment))
             {
-                var netInfo = PrefabCollection<NetInfo>.GetLoaded(i);
-
-                if (netInfo == null || netInfo.m_lanes == null || !netInfo.m_hasPedestrianLanes) continue;
-
-                foreach (NetInfo.Lane lane in netInfo.m_lanes)
+                var sharedStopSegment = sharedStopSegments[sharedStopSegments.FindIndex(s => s.m_segment == segment)];
+                if (sharedStopSegment.m_lines.Keys.Contains(line))
                 {
-                    if (lane == null || lane.m_laneType != NetInfo.LaneType.Pedestrian || lane.m_laneProps == null || lane.m_laneProps.m_props == null ) continue;
+                    sharedStopSegment.m_lines[line] |= direction;
+                    Log.Debug($"add to existing line {segment}, {sharedStopTypes}, {line}, {direction}");
+                }
+                else sharedStopSegment.m_lines.Add(line, direction);
+                if (direction == NetInfo.Direction.Forward) sharedStopSegment.m_sharedStopTypesForward |= sharedStopTypes;
+                else if (direction == NetInfo.Direction.Backward) sharedStopSegment.m_sharedStopTypesBackward |= sharedStopTypes;
+                Log.Debug($"forward {sharedStopSegment.m_sharedStopTypesForward}, backward{sharedStopSegment.m_sharedStopTypesBackward}");
+                //sharedStopSegment.UpdateProps(direction);
+            }
+            else 
+            {
+                var newSegment = new SharedStopSegment(segment, sharedStopTypes, line, direction);
+                //newSegment.UpdateProps(direction);
+                sharedStopSegments.Add(newSegment);
+                Log.Debug($"add sharedsegment {segment}, {sharedStopSegments.Count}, direction: {direction}");
+            }
+        }
 
-                    foreach (NetLaneProps.Prop laneProp in lane.m_laneProps.m_props)
+        public bool RemoveSharedStop(ushort segment, SharedStopSegment.SharedStopTypes sharedStopTypes, ushort line, NetInfo.Direction direction)
+        {
+            if (sharedStopSegments.Any(s => s.m_segment == segment))
+            {
+                var sharedStopSegment = sharedStopSegments[sharedStopSegments.FindIndex(s => s.m_segment == segment)];
+                if (direction == NetInfo.Direction.Forward) sharedStopSegment.m_sharedStopTypesForward &= ~sharedStopTypes;
+                else if (direction == NetInfo.Direction.Backward) sharedStopSegment.m_sharedStopTypesBackward &= ~sharedStopTypes;
+                if (sharedStopSegment.m_lines.Keys.Contains(line)) //TODO: remove unnecessary checks
+                {
+                    sharedStopSegment.m_lines[line] &= ~direction;
+                    if (sharedStopSegment.m_lines[line] == NetInfo.Direction.None)
                     {
-                        if (laneProp != null && laneProp.m_prop != null && laneProp.m_prop.name == propName)
-                        {
-                            laneProp.m_flagsForbidden |= NetLane.Flags.Stop;
-                        }
+                        sharedStopSegment.m_lines.Remove(line);
                     }
                 }
+                if (sharedStopSegment.m_lines.Count == 0)
+                {
+                    Singleton<NetManager>.instance.m_segments.m_buffer[sharedStopSegment.m_segment].m_flags &= ~NetSegment.Flags.StopAll;
+                    sharedStopSegments.Remove(sharedStopSegment);
+                    Log.Debug($"removed sharedsegment {segment}");
+                    //sharedStopSegment.InitProps();
+                    return true;
+                }
+                //sharedStopSegment.UpdateProps(direction);
+                var flags = Singleton<NetManager>.instance.m_segments.m_buffer[sharedStopSegment.m_segment].m_flags;
+                var inverted = (flags & NetSegment.Flags.Invert) == NetSegment.Flags.Invert;
+                sharedStopSegment.UpdateStopFlags(inverted, out NetSegment.Flags stopflags);
+                flags &= ~(NetSegment.Flags.StopRight | NetSegment.Flags.StopLeft | NetSegment.Flags.StopRight2 | NetSegment.Flags.StopLeft2);
+                Singleton<NetManager>.instance.m_segments.m_buffer[sharedStopSegment.m_segment].m_flags = stopflags | flags;
+                return true;
             }
+            return false;
         }
 
         public bool GetStopPosition(out bool skipOriginal, TransportInfo info, ushort segment, ushort building, ushort firstStop, ref Vector3 hitPos, out bool fixedPlatform)
@@ -76,7 +122,7 @@ namespace SharedStopEnabler.StopSelection
 
             if ((int)segment != 0 && alternateMode && !additionalStopsSet)  //set additional stoptypes
             {
-                Log.Debug("called set stoptypes");
+                //Log.Debug("called set stoptypes");
                 additionalStopsSet = true;
                 additionalStopsRemoved = false;
                 for (int i = 1; i < netManager.m_segments.m_buffer[(int)segment].Info.m_lanes.Length - 2; i++)
@@ -85,15 +131,14 @@ namespace SharedStopEnabler.StopSelection
                     if (IsValidLane(segment, (uint)i, info))
                     {
                         Log.Debug($"SharedStops calculate new stoptypes: {segment}, Stopflag: {info.m_stopFlag}, hitpos. {hitPos.x} {hitPos.y} {hitPos.z}, vehicleType: {info.m_vehicleType}");
-                        netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_stopType |= info.m_vehicleType;
-
+                        netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[index].m_stopType |= info.m_vehicleType;                      
                     }
                 }
             }
 
             if ((int)segment != 0 && !alternateMode && !additionalStopsRemoved)  //remove additional stoptypes
             {
-                Log.Debug("called remove stoptypes");
+                //Log.Debug("called remove stoptypes");
                 additionalStopsRemoved = true;
                 additionalStopsSet = false;
                 if (netManager.m_segments.m_buffer[(int)segment].HasStops(segment))
@@ -133,7 +178,6 @@ namespace SharedStopEnabler.StopSelection
                 {
                     if (netManager.m_segments.m_buffer[(int)segment].GetClosestLanePosition(closestPedestrianLane, NetInfo.LaneType.Vehicle | NetInfo.LaneType.TransportVehicle, info.m_vehicleType, out Vector3 position2, out uint laneID2, out int laneIndex2, out float laneOffset2))
                     {
-
                         NetLane.Flags flags3 = (NetLane.Flags)netManager.m_lanes.m_buffer[(int)segment].m_flags;
                         flags3 &= NetLane.Flags.Stops;
                         if (flags3 != NetLane.Flags.None && info.m_stopFlag != NetLane.Flags.None && flags3 != info.m_stopFlag)
@@ -147,7 +191,6 @@ namespace SharedStopEnabler.StopSelection
                         netManager.m_lanes.m_buffer[laneID2].CalculateStopPositionAndDirection(0.5019608f, stopOffset, out hitPos, out Vector3 direction);
                         //Log.Debug($"pedesrianlane: {laneid1}, vehiclelane: {laneID2}, stoppos: {hitPos}");
                         fixedPlatform = true;
-                        Log.Debug("returned true on line 102");
                         return true;
                     }
                 }
@@ -163,7 +206,6 @@ namespace SharedStopEnabler.StopSelection
                 if (this.m_building != 0 && (int)firstStop != 0 && (this.m_building == (int)building || this.m_building == (int)parentBuilding))  //seems to never be called?
                 {
                     hitPos = netManager.m_nodes.m_buffer[(int)firstStop].m_position;
-                    Log.Debug("returned true on line 119");
                     return true;
                 }
                 VehicleInfo randomVehicleInfo = Singleton<VehicleManager>.instance.GetRandomVehicleInfo(ref Singleton<SimulationManager>.instance.m_randomizer, info.m_class.m_service, info.m_class.m_subService, info.m_class.m_level);
@@ -212,7 +254,6 @@ namespace SharedStopEnabler.StopSelection
                                         if ((int)building == (int)ownerBuilding)
                                         {
                                             hitPos = position;
-                                            Log.Debug("returned true on line 168");
                                             return true;
                                         }
                                     }
@@ -248,7 +289,7 @@ namespace SharedStopEnabler.StopSelection
             return false;
         }
 
-        private int GetLineCount(Vector3 stopPosition, Vector3 stopDirection, TransportInfo.TransportType transportType)
+        public int GetLineCount(Vector3 stopPosition, Vector3 stopDirection, TransportInfo.TransportType transportType)
         {
             NetManager instance = Singleton<NetManager>.instance;
             TransportManager instance2 = Singleton<TransportManager>.instance;

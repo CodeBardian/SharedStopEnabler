@@ -21,12 +21,14 @@ namespace SharedStopEnabler.StopSelection
             return (Singleton<NetManager>.instance.m_segments.m_buffer[(int)segment].m_flags & NetSegment.Flags.StopAll) != NetSegment.Flags.None;
         }
 
-        public static bool HasSharedStop(this NetSegment netSegment, int segment, NetLane.Flags stopFlag)  //doesnt work for elevated roads, they dont have stoptypes, due to vanilla elevated stop restriction
+        public static bool IsSharedStop(this NetSegment netSegment, int segment)  //doesnt work for elevated roads, they dont have stoptypes, due to vanilla elevated stop restriction
         {
-            bool hasStops = netSegment.HasStops(segment);
-            NetSegment.Flags existingFlags = Singleton<NetManager>.instance.m_segments.m_buffer[(int)segment].m_flags;
-            Log.Debug($"hasStops: {hasStops}, existingflag: {existingFlags}, stopflag: {(NetSegment.Flags)stopFlag}");
-            return hasStops && (existingFlags & (NetSegment.Flags)stopFlag) != (NetSegment.Flags)stopFlag;
+            return Singleton<SharedStopsTool>.instance.sharedStopSegments.Any(s => s.m_segment == segment); 
+        }
+
+        public static List<SharedStopSegment> FindSharedStopsByLine(ushort line)  
+        {
+            return Singleton<SharedStopsTool>.instance.sharedStopSegments.Where(s => s.m_lines.ContainsKey(line)).ToList();
         }
     }
 }

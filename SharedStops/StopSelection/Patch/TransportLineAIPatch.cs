@@ -22,10 +22,21 @@ namespace SharedStopEnabler.StopSelection.Patch
 			//object result = typeof(RoadBaseAI).GetMethod("UpdateSegmentFlags", new[] { typeof(ushort), typeof(NetSegment).MakeByRefType() }).Invoke(this, args);
 			//if ((bool)result)
 			//	data = (NetSegment)args[1];
-			var ptr = typeof(RoadBaseAI).GetMethod("UpdateSegmentFlags", new[] { typeof(ushort), typeof(NetSegment).MakeByRefType() }).MethodHandle.GetFunctionPointer();
-			var baseUpdate = (Action<ushort, NetSegment>)Activator.CreateInstance(typeof(Action<ushort, NetSegment>), this, ptr);
-			baseUpdate(segmentID, data);
-
+			try
+			{
+				MethodInfo method = typeof(RoadBaseAI).GetMethod("UpdateSegmentFlags", new[] { typeof(ushort), typeof(NetSegment).MakeByRefType() });			
+				//Log.Debug($"{method}");
+				IntPtr ptr = method.MethodHandle.GetFunctionPointer();
+				//Log.Debug($"{ptr}");
+				Action<ushort, NetSegment> baseUpdate = (Action<ushort, NetSegment>)Activator.CreateInstance(typeof(Action<ushort, NetSegment>), this, ptr);
+				//Log.Debug($"{baseUpdate}");
+				baseUpdate(segmentID, data);
+			}
+			catch (Exception e)
+			{
+				Log.Info($"UpdatesegmentFlags error {e}");
+				Log.Debug($"UpdatesegmentFlags error {e}");
+			}
 			var oldflags = data.m_flags;
 			NetSegment.Flags flags = data.m_flags & ~(NetSegment.Flags.StopRight | NetSegment.Flags.StopLeft | NetSegment.Flags.StopRight2 | NetSegment.Flags.StopLeft2);
 			if (m_info.m_lanes != null)

@@ -36,7 +36,7 @@ jobs:
           $env:ASSET_FILE_PATH = "bin/Release/SharedStopEnabler.${{ steps.get_version_number.outputs.VERSION }}.zip"
           $env:ASSET_FILE_NAME = "SharedStopEnabler.${{ steps.get_version_number.outputs.VERSION }}.zip"
           Compress-Archive -Path bin/Release/*.dll -DestinationPath $env:ASSET_FILE_PATH -CompressionLevel Optimal
-          echo "::set-output name=ASSET_FILE::$env:ASSET_FILE_PATH"
+          echo "::set-output name=ASSET_FILE_PATH::$env:ASSET_FILE_PATH"
           echo "::set-output name=ASSET_FILE_NAME::$env:ASSET_FILE_NAME"
       - name: Create Release
         id: create_release

@@ -68,6 +68,10 @@ namespace SharedStopEnabler.StopSelection
                 sharedStopSegments.Add(newSegment);
                 Log.Debug($"add sharedsegment {segment}, {sharedStopSegments.Count}, direction: {direction}");
             }
+            NetAI roadAi = Singleton<NetManager>.instance.m_segments.m_buffer[segment].Info.m_netAI;
+            Log.Debug($"netAi {roadAi}");
+            if (roadAi is RoadBridgeAI roadBridgeAI)
+                ((RoadBridgeAIExt)roadBridgeAI).UpdateSegmentFlags(segment, ref Singleton<NetManager>.instance.m_segments.m_buffer[segment]);
         }
 
         public bool RemoveSharedStop(ushort segment, SharedStopSegment.SharedStopTypes sharedStopTypes, ushort line, NetInfo.Direction direction)

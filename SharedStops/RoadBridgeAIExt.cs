@@ -1,39 +1,18 @@
 ﻿using ColossalFramework;
-using HarmonyLib;
+using SharedStopEnabler.StopSelection;
 using SharedStopEnabler.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text;
-using SharedStopEnabler.RedirectionFramework.Attributes;
-using UnityEngine;
 
-namespace SharedStopEnabler.StopSelection.Patch
+namespace SharedStopEnabler
 {
-	[TargetType(typeof(RoadAI))]
-	class RoadAIDetour : RoadAI
-	{
-		[RedirectMethod]
+    class RoadBridgeAIExt : RoadBridgeAI
+    {
 		public override void UpdateSegmentFlags(ushort segmentID, ref NetSegment data)
 		{
-			// calls base.UpdateSegmentFlags(segmentID, ref data);
-			//object[] args = new object[] { segmentID, data };
-			//object result = typeof(RoadBaseAI).GetMethod("UpdateSegmentFlags", new[] { typeof(ushort), typeof(NetSegment).MakeByRefType() }).Invoke(this, args);
-			//if ((bool)result)
-			//	data = (NetSegment)args[1];
-			try
-			{
-				MethodInfo method = typeof(RoadBaseAI).GetMethod("UpdateSegmentFlags", new[] { typeof(ushort), typeof(NetSegment).MakeByRefType() });			
-				IntPtr ptr = method.MethodHandle.GetFunctionPointer();
-				Action<ushort, NetSegment> baseUpdate = (Action<ushort, NetSegment>)Activator.CreateInstance(typeof(Action<ushort, NetSegment>), this, ptr);
-				baseUpdate(segmentID, data);
-			}
-			catch (Exception e)
-			{
-				Log.Info($"UpdatesegmentFlags error {e}");
-				Log.Debug($"UpdatesegmentFlags error {e}");
-			}
+			base.UpdateSegmentFlags(segmentID, ref data);
 			var oldflags = data.m_flags;
 			NetSegment.Flags flags = data.m_flags & ~(NetSegment.Flags.StopRight | NetSegment.Flags.StopLeft | NetSegment.Flags.StopRight2 | NetSegment.Flags.StopLeft2);
 			if (m_info.m_lanes != null)
@@ -79,39 +58,12 @@ namespace SharedStopEnabler.StopSelection.Patch
 				//flags &= ~(NetSegment.Flags.StopRight | NetSegment.Flags.StopLeft | NetSegment.Flags.StopRight2 | NetSegment.Flags.StopLeft2);
 				data.m_flags = flags;
 				data.m_flags |= stopflags;
-				Log.Debug($"oldflags {oldflags} flags {flags} newflagsSharedStop {data.m_flags}");
+				Log.Debug($"oldflags {oldflags} flags {flags} newflagsSharedStop bridge {data.m_flags}");
 				return;
 			}
-			Log.Debug($"oldflags {oldflags} newflags {flags} on segment {segmentID}");
+			Log.Debug($"oldflags {oldflags} newflags {flags} on segment {segmentID} bridge");
 			data.m_flags = flags;
 			//TODO check if stop flags were added 
-		}
-	}
-
-	[HarmonyPatch(typeof(TransportLineAI), "GetStopLane")]
-	class TransportLineAIPatch1
-	{
-		static bool Prefix(ref bool __result, ref PathUnit.Position pos, VehicleInfo.VehicleType vehicleType)
-		{
-			if (pos.m_segment != 0)
-			{
-				if (vehicleType == VehicleInfo.VehicleType.None)
-				{
-					return true;
-				}
-				Log.Debug($"getstoplane {pos.m_segment}, {pos.m_lane}, {pos.m_offset}");
-				NetManager instance = Singleton<NetManager>.instance;
-				if (instance.m_segments.m_buffer[(int)pos.m_segment].GetClosestLane((int)pos.m_lane, NetInfo.LaneType.Vehicle | NetInfo.LaneType.TransportVehicle, vehicleType, out int num, out uint num2))
-				{
-					pos.m_lane = (byte)num;
-					Log.Debug($"get new stoplane {pos.m_segment}, {pos.m_lane}, {pos.m_offset}");
-					__result = true;
-					return false;
-				}
-			}
-			pos = default;
-			__result = false;
-			return false;
 		}
 	}
 }

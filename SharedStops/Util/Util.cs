@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
 
 namespace SharedStopEnabler.Util
 {
@@ -22,15 +19,15 @@ namespace SharedStopEnabler.Util
             }
         }
 
-        public static TA As<TA>(this RoadBridgeAI roadBridge) where TA : RoadBridgeAI
+        public static TA As<TA>() where TA : RoadBridgeAI
         {
             var type = typeof(TA);
-            var instance = Activator.CreateInstance(type);
+            TA instance = (TA)Activator.CreateInstance(type);
 
             PropertyInfo[] properties = type.GetProperties();
             foreach (var property in properties)
             {
-                property.SetValue(instance, property.GetValue(roadBridge, null), null);
+                property.SetValue(instance, property.GetValue(instance, null), null);
             }
 
             return (TA)instance;

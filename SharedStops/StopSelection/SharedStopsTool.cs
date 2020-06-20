@@ -72,9 +72,7 @@ namespace SharedStopEnabler.StopSelection
             Log.Debug($"netAi {roadAi}");
             if (roadAi is RoadBridgeAI roadBridgeAI)
             {
-                var roadBridgeAIExt = roadBridgeAI.As<RoadBridgeAIExt>();
-                Log.Debug($"{roadBridgeAIExt}");
-                roadBridgeAIExt.UpdateSegmentFlags(segment, ref Singleton<NetManager>.instance.m_segments.m_buffer[segment]);
+                roadBridgeAI.UpdateSegmentStopFlags(segment, ref Singleton<NetManager>.instance.m_segments.m_buffer[segment]);
             }
         }
 

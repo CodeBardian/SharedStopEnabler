@@ -27,13 +27,6 @@ namespace SharedStopEnabler.StopSelection
                 StopsUtil.EnableElevatedStops();
                 sharedStopSegments = new List<SharedStopSegment>();
 
-                //StopsUtil.ReplaceLaneProp("Bus Stop Small", "1919887701.Clus_BusShelter01");
-                //StopsUtil.ReplaceLaneProp("Bus Stop Large", "1919887701.Clus_BusShelter05");
-                //StopsUtil.ReplaceLaneProp("Sightseeing Bus Stop Small", "1919887701.Clus_BusShelter01");
-                //StopsUtil.ReplaceLaneProp("Sightseeing Bus Stop Large", "1919887701.Clus_BusShelter05");
-                //StopsUtil.ReplaceLaneProp("Trolleybus Stop Small", "1919887701.Clus_BusShelter01");
-                //StopsUtil.ReplaceLaneProp("Trolleybus Stop Large", "1919887701.Clus_BusShelter05");
-
                 StopsUtil.InitLaneProps("Tram Stop");
 
                 Log.Info($"successful startup");

@@ -84,34 +84,6 @@ namespace SharedStopEnabler.StopSelection.Patch
 			}
 			Log.Debug($"oldflags {oldflags} newflags {flags} on segment {segmentID}");
 			data.m_flags = flags;
-			//TODO check if stop flags were added 
-		}
-	}
-
-	[HarmonyPatch(typeof(TransportLineAI), "GetStopLane")]
-	class TransportLineAIPatch1
-	{
-		static bool Prefix(ref bool __result, ref PathUnit.Position pos, VehicleInfo.VehicleType vehicleType)
-		{
-			if (pos.m_segment != 0)
-			{
-				if (vehicleType == VehicleInfo.VehicleType.None)
-				{
-					return true;
-				}
-				Log.Debug($"getstoplane {pos.m_segment}, {pos.m_lane}, {pos.m_offset}");
-				NetManager instance = Singleton<NetManager>.instance;
-				if (instance.m_segments.m_buffer[(int)pos.m_segment].GetClosestLane((int)pos.m_lane, NetInfo.LaneType.Vehicle | NetInfo.LaneType.TransportVehicle, vehicleType, out int num, out uint num2))
-				{
-					pos.m_lane = (byte)num;
-					Log.Debug($"get new stoplane {pos.m_segment}, {pos.m_lane}, {pos.m_offset}");
-					__result = true;
-					return false;
-				}
-			}
-			pos = default;
-			__result = false;
-			return false;
 		}
 	}
 }

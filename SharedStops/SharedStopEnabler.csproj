@@ -73,6 +73,7 @@
     <Compile Include="RoadBridgeAIExt.cs" />
     <Compile Include="SharedStops.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StopSelection\Patch\NetSegmentPatch.cs" />
     <Compile Include="StopSelection\StopsUtil.cs" />
     <Compile Include="StopSelection\Patch\TransportLineAIPatch.cs" />
     <Compile Include="StopSelection\Patch\TransportLinePatch.cs" />

@@ -14,13 +14,13 @@ using UnityEngine;
 namespace SharedStopEnabler.StopSelection.Patch
 {
     [HarmonyPatch(typeof(TransportTool), "RemoveStop")]
-    class TransportLinePatch1
+    class TransportLinePatch_RemoveStop
     {
         static void Postfix(ref IEnumerator __result, TransportTool __instance, TransportInfo ___m_prefab, Ray ___m_mouseRay, float ___m_mouseRayLength, ushort ___m_lastEditLine, Vector3 ___m_hitPosition)
         {
             try
             {
-                ToolBase.RaycastOutput raycastOutput = RayCastWrapper.RayCast(__instance, ___m_prefab, ___m_mouseRay, ___m_mouseRayLength);              
+                ToolBase.RaycastOutput raycastOutput = RayCastWrapper.RayCast(__instance, ___m_prefab, ___m_mouseRay, ___m_mouseRayLength);
                 if (raycastOutput.m_netSegment != 0 && ___m_lastEditLine != 0)
                 {
                     if (Singleton<NetManager>.instance.m_segments.m_buffer[(int)raycastOutput.m_netSegment].GetClosestLanePosition(___m_hitPosition, NetInfo.LaneType.Vehicle, ___m_prefab.m_vehicleType, out _, out uint laneID, out int laneindex, out _))
@@ -38,7 +38,7 @@ namespace SharedStopEnabler.StopSelection.Patch
     }
 
     [HarmonyPatch(typeof(TransportTool), "CancelPrevStop")]
-    class TransportLinePatch3
+    class TransportLinePatch_CancelPrevStop
     {
         static void Postfix(ref IEnumerator __result, TransportTool __instance, TransportInfo ___m_prefab, Ray ___m_mouseRay, float ___m_mouseRayLength, ushort ___m_lastEditLine, Vector3 ___m_hitPosition)
         {
@@ -62,7 +62,7 @@ namespace SharedStopEnabler.StopSelection.Patch
     }
 
     [HarmonyPatch(typeof(TransportTool), "MoveStop")]
-    class TransportLinePatch4
+    class TransportLinePatch_MoveStop
     {
         static void Postfix(ref IEnumerator<bool> __result, TransportTool __instance, TransportInfo ___m_prefab, Ray ___m_mouseRay, float ___m_mouseRayLength, ushort ___m_lastEditLine, Vector3 ___m_hitPosition)
         {
@@ -71,7 +71,8 @@ namespace SharedStopEnabler.StopSelection.Patch
                 Log.Debug($"SSE:  moved stop {__result.Current}");
                 //if (__result.Current)
                 //{
-                    ToolBase.RaycastOutput raycastOutput = RayCastWrapper.RayCast(__instance, ___m_prefab, ___m_mouseRay, ___m_mouseRayLength);
+                ToolBase.RaycastOutput raycastOutput = RayCastWrapper.RayCast(__instance, ___m_prefab, ___m_mouseRay, ___m_mouseRayLength);
+                Log.Debug($"{raycastOutput.m_hitPos.x} {raycastOutput.m_hitPos.y} {raycastOutput.m_hitPos.z} on {raycastOutput.m_netSegment}");
                     if (raycastOutput.m_netSegment != 0 && ___m_lastEditLine != 0)
                     {
                         if (Singleton<NetManager>.instance.m_segments.m_buffer[(int)raycastOutput.m_netSegment].GetClosestLanePosition(___m_hitPosition, NetInfo.LaneType.Vehicle, ___m_prefab.m_vehicleType, out _, out _, out int laneindex, out _))
@@ -90,7 +91,7 @@ namespace SharedStopEnabler.StopSelection.Patch
     }
 
     [HarmonyPatch(typeof(TransportTool), "AddStop")]
-    class TransportLinePatch5
+    class TransportLinePatch_AddStop
     {
         static void Postfix(ref IEnumerator __result, TransportTool __instance, TransportInfo ___m_prefab, Ray ___m_mouseRay, float ___m_mouseRayLength, ushort ___m_lastEditLine, Vector3 ___m_hitPosition)
         {
@@ -98,6 +99,7 @@ namespace SharedStopEnabler.StopSelection.Patch
             {
                 var netManager = Singleton<NetManager>.instance;
                 ToolBase.RaycastOutput raycastOutput = RayCastWrapper.RayCast(__instance, ___m_prefab, ___m_mouseRay, ___m_mouseRayLength);
+                Log.Debug($"{raycastOutput.m_hitPos.x} {raycastOutput.m_hitPos.y} {raycastOutput.m_hitPos.z} on {raycastOutput.m_netSegment}");
                 if (raycastOutput.m_netSegment != 0 && ___m_lastEditLine != 0)
                 {
                     if (netManager.m_segments.m_buffer[(int)raycastOutput.m_netSegment].GetClosestLanePosition(___m_hitPosition, NetInfo.LaneType.Vehicle, ___m_prefab.m_vehicleType, out _, out uint laneID, out int laneindex, out _))
@@ -116,7 +118,7 @@ namespace SharedStopEnabler.StopSelection.Patch
 
 
     [HarmonyPatch(typeof(TransportTool), "GetStopPosition")]
-    class TransportToolPatch2
+    class TransportToolPatch_GetStopPosition
     {
         static bool Prefix(ref bool __result, TransportInfo info, ushort segment, ushort building, ushort firstStop, ref Vector3 hitPos, out bool fixedPlatform)
         {

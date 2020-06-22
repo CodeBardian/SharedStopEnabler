@@ -1,10 +1,6 @@
 ﻿using ColossalFramework;
 using HarmonyLib;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
 using UnityEngine;
 
 namespace SharedStopEnabler.StopSelection.Patch
@@ -23,7 +19,7 @@ namespace SharedStopEnabler.StopSelection.Patch
             if (!requireConnect) return true;
             __instance.GetClosestLane(0, laneTypes, vehicleTypes, out int laneindex, out uint laneID);
             ushort segment = Singleton<NetManager>.instance.m_lanes.m_buffer[laneID].m_segment;
-            if (__instance.IsSharedStopSegment(segment)) requireConnect = false;
+            if (__instance.IsSharedStopSegment(segment) || Singleton<SharedStopsTool>.instance.m_lastEditPoint == point) requireConnect = false;
             return true;
         }
     }

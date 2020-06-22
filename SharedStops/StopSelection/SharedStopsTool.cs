@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEngine;
+using SharedStopEnabler.StopSelection.AI;
 
 namespace SharedStopEnabler.StopSelection
 {
@@ -14,6 +15,8 @@ namespace SharedStopEnabler.StopSelection
     {
 
         public List<SharedStopSegment> sharedStopSegments;
+
+        public Vector3 m_lastEditPoint;
 
         private bool additionalStopsSet = false;
         private bool additionalStopsRemoved = true;

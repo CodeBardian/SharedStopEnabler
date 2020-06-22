@@ -1,17 +1,14 @@
 ﻿using ColossalFramework;
-using SharedStopEnabler.StopSelection;
 using SharedStopEnabler.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace SharedStopEnabler
+namespace SharedStopEnabler.StopSelection.AI
 {
-    static class RoadBridgeAIExt
-    {
+	static class RoadBridgeAIExt
+	{
 		public static void UpdateSegmentStopFlags(this RoadBridgeAI roadbridge, ushort segmentID, ref NetSegment data)
 		{
 			roadbridge.UpdateSegmentFlags(segmentID, ref data);
@@ -67,3 +64,4 @@ namespace SharedStopEnabler
 		}
 	}
 }
+

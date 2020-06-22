@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEngine;
+using SharedStopEnabler.StopSelection.AI;
 
 namespace SharedStopEnabler.StopSelection
 {
@@ -14,6 +15,8 @@ namespace SharedStopEnabler.StopSelection
     {
 
         public List<SharedStopSegment> sharedStopSegments;
+
+        public Vector3 m_lastEditPoint;
 
         private bool additionalStopsSet = false;
         private bool additionalStopsRemoved = true;
@@ -26,13 +29,6 @@ namespace SharedStopEnabler.StopSelection
             {
                 StopsUtil.EnableElevatedStops();
                 sharedStopSegments = new List<SharedStopSegment>();
-
-                //StopsUtil.ReplaceLaneProp("Bus Stop Small", "1919887701.Clus_BusShelter01");
-                //StopsUtil.ReplaceLaneProp("Bus Stop Large", "1919887701.Clus_BusShelter05");
-                //StopsUtil.ReplaceLaneProp("Sightseeing Bus Stop Small", "1919887701.Clus_BusShelter01");
-                //StopsUtil.ReplaceLaneProp("Sightseeing Bus Stop Large", "1919887701.Clus_BusShelter05");
-                //StopsUtil.ReplaceLaneProp("Trolleybus Stop Small", "1919887701.Clus_BusShelter01");
-                //StopsUtil.ReplaceLaneProp("Trolleybus Stop Large", "1919887701.Clus_BusShelter05");
 
                 StopsUtil.InitLaneProps("Tram Stop");
 
@@ -67,6 +63,12 @@ namespace SharedStopEnabler.StopSelection
                 //newSegment.UpdateProps(direction);
                 sharedStopSegments.Add(newSegment);
                 Log.Debug($"add sharedsegment {segment}, {sharedStopSegments.Count}, direction: {direction}");
+            }
+            NetAI roadAi = Singleton<NetManager>.instance.m_segments.m_buffer[segment].Info.m_netAI;
+            Log.Debug($"netAi {roadAi}");
+            if (roadAi is RoadBridgeAI roadBridgeAI)
+            {
+                roadBridgeAI.UpdateSegmentStopFlags(segment, ref Singleton<NetManager>.instance.m_segments.m_buffer[segment]);
             }
         }
 

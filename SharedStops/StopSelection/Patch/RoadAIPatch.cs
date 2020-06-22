@@ -24,12 +24,12 @@ namespace SharedStopEnabler.StopSelection.Patch
 			//	data = (NetSegment)args[1];
 			try
 			{
-				MethodInfo method = typeof(RoadBaseAI).GetMethod("UpdateSegmentFlags", new[] { typeof(ushort), typeof(NetSegment).MakeByRefType() });			
-				//Log.Debug($"{method}");
+				MethodInfo method = typeof(RoadBaseAI).GetMethod("UpdateSegmentFlags", new[] { typeof(ushort), typeof(NetSegment).MakeByRefType()});
+				Log.Debug($"{method}");
 				IntPtr ptr = method.MethodHandle.GetFunctionPointer();
-				//Log.Debug($"{ptr}");
+				Log.Debug($"{ptr}");
 				Action<ushort, NetSegment> baseUpdate = (Action<ushort, NetSegment>)Activator.CreateInstance(typeof(Action<ushort, NetSegment>), this, ptr);
-				//Log.Debug($"{baseUpdate}");
+				Log.Debug($"{baseUpdate}");
 				baseUpdate(segmentID, data);
 			}
 			catch (Exception e)
@@ -74,7 +74,7 @@ namespace SharedStopEnabler.StopSelection.Patch
 					num2++;
 				}
 			}
-			if (oldflags != flags && data.IsSharedStop((int)segmentID))
+			if (oldflags != flags && data.IsSharedStopSegment((int)segmentID))
 			{
 				var index = Singleton<SharedStopsTool>.instance.sharedStopSegments.FindIndex(s => s.m_segment == segmentID);
 				var inverted = (flags & NetSegment.Flags.Invert) == NetSegment.Flags.Invert;
@@ -85,7 +85,7 @@ namespace SharedStopEnabler.StopSelection.Patch
 				Log.Debug($"oldflags {oldflags} flags {flags} newflagsSharedStop {data.m_flags}");
 				return;
 			}
-			Log.Debug($"oldflags {oldflags} newflags {flags}");
+			Log.Debug($"oldflags {oldflags} newflags {flags} on segment {segmentID}");
 			data.m_flags = flags;
 		}
 	}

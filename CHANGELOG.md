@@ -1,5 +1,12 @@
 ## Changelog
 
+### [1.0.3] - 2020-06-22
+
+#### Added
+- elevated (shared) stops
+#### Fixed
+- passengers waiting at wrong location ([#5](https://github.com/CodeBardian/SharedStopEnabler/issues/5))
+
 ### [1.0.2] - 2020-05-26
 
 #### Changed

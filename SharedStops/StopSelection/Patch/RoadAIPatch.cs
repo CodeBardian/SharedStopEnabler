@@ -24,9 +24,12 @@ namespace SharedStopEnabler.StopSelection.Patch
 			//	data = (NetSegment)args[1];
 			try
 			{
-				MethodInfo method = typeof(RoadBaseAI).GetMethod("UpdateSegmentFlags", new[] { typeof(ushort), typeof(NetSegment).MakeByRefType() });			
+				MethodInfo method = typeof(RoadBaseAI).GetMethod("UpdateSegmentFlags", new[] { typeof(ushort), typeof(NetSegment).MakeByRefType()});
+				Log.Debug($"{method}");
 				IntPtr ptr = method.MethodHandle.GetFunctionPointer();
+				Log.Debug($"{ptr}");
 				Action<ushort, NetSegment> baseUpdate = (Action<ushort, NetSegment>)Activator.CreateInstance(typeof(Action<ushort, NetSegment>), this, ptr);
+				Log.Debug($"{baseUpdate}");
 				baseUpdate(segmentID, data);
 			}
 			catch (Exception e)

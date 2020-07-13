@@ -120,11 +120,13 @@ namespace SharedStopEnabler.StopSelection.Patch
     [HarmonyPatch(typeof(TransportTool), "GetStopPosition")]
     class TransportToolPatch_GetStopPosition
     {
-        static bool Prefix(ref bool __result, TransportInfo info, ushort segment, ushort building, ushort firstStop, ref Vector3 hitPos, out bool fixedPlatform)
+        static void Postfix(ref bool __result, TransportInfo info, ushort segment, ushort building, ushort firstStop, ref Vector3 hitPos)
         {
-            __result = Singleton<SharedStopsTool>.instance.GetStopPosition(out bool skipOriginal, info, segment, building, firstStop, ref hitPos, out fixedPlatform);
-
-            return !skipOriginal;
+            //Log.Debug("Called GetStopPosition Postfix");
+            if (!__result && segment != 0 && info.m_transportType != TransportInfo.TransportType.Pedestrian)
+            {
+                Singleton<SharedStopsTool>.instance.GetStopPosition(ref __result, info, segment, building, firstStop, ref hitPos, out bool fixedPlatform);
+            }
         }
     }
 }

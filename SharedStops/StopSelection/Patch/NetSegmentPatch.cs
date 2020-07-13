@@ -8,9 +8,9 @@ namespace SharedStopEnabler.StopSelection.Patch
     [HarmonyPatch(typeof(NetSegment))]
     [HarmonyPatch("GetClosestLanePosition")]
     [HarmonyPatch(
-        new Type[] { typeof(Vector3), typeof(NetInfo.LaneType), typeof(VehicleInfo.VehicleType), typeof(VehicleInfo.VehicleType), 
+        new Type[] { typeof(Vector3), typeof(NetInfo.LaneType), typeof(VehicleInfo.VehicleType), typeof(VehicleInfo.VehicleType),
             typeof(bool), typeof(Vector3), typeof(int), typeof(float), typeof(Vector3), typeof(int), typeof(float)},
-        new ArgumentType[] { ArgumentType.Normal, ArgumentType.Normal, ArgumentType.Normal, ArgumentType.Normal, ArgumentType.Normal, 
+        new ArgumentType[] { ArgumentType.Normal, ArgumentType.Normal, ArgumentType.Normal, ArgumentType.Normal, ArgumentType.Normal,
             ArgumentType.Out, ArgumentType.Out, ArgumentType.Out, ArgumentType.Out, ArgumentType.Out, ArgumentType.Out})]
     class NetSegmentPatch_GetClosestLanePosition
     {

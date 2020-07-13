@@ -77,19 +77,16 @@ namespace SharedStopEnabler.StopSelection
 
                     if (segment.m_lodMaterial.name.Contains("BusSide"))
                     {
-                        Log.Info("found bus side");
                         segment.m_backwardForbidden &= ~NetSegment.Flags.StopRight2;
                         segment.m_forwardForbidden &= ~NetSegment.Flags.StopLeft2;
                     }
                     else if (segment.m_lodMaterial.name.Contains("TramAndBusStop"))
                     {
-                        Log.Info("found tram and bus side");
                         segment.m_backwardForbidden &= ~NetSegment.Flags.StopLeft2;
                         segment.m_forwardForbidden &= ~NetSegment.Flags.StopRight2;
                     }
                     else if (segment.m_lodMaterial.name.Contains("BusBoth"))
                     {
-                        Log.Info("found bus both");
                         segment.m_backwardForbidden &= ~NetSegment.Flags.StopBoth2;
                         segment.m_forwardForbidden &= ~NetSegment.Flags.StopBoth2;
                     }

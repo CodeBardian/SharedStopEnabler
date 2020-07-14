@@ -83,7 +83,7 @@
     <Compile Include="StopSelection\SharedStopsTool.cs" />
     <Compile Include="StopSelection\StopSelectionExtensions.cs" />
     <Compile Include="StopSelection\TransportLineObserver.cs" />
-    <Compile Include="Util\Util.cs" />
+    <Compile Include="Util\ModCompat.cs" />
     <Compile Include="Util\Log.cs" />
     <Compile Include="Util\Patcher.cs" />
     <Compile Include="Util\RayCast.cs" />

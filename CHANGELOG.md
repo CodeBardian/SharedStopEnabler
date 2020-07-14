@@ -1,5 +1,11 @@
 ## Changelog
 
+### [1.0.4] - 2020-07-14
+
+#### Fixed
+- wrong pathfinding on shared stops ([#1](https://github.com/CodeBardian/SharedStopEnabler/issues/1))
+- incompatibility with advanced stop selection mod
+
 ### [1.0.3] - 2020-06-22
 
 #### Added

@@ -17,20 +17,15 @@ namespace SharedStopEnabler.StopSelection.Patch
 		[RedirectMethod]
 		public override void UpdateSegmentFlags(ushort segmentID, ref NetSegment data)
 		{
-			// calls base.UpdateSegmentFlags(segmentID, ref data);
-			//object[] args = new object[] { segmentID, data };
-			//object result = typeof(RoadBaseAI).GetMethod("UpdateSegmentFlags", new[] { typeof(ushort), typeof(NetSegment).MakeByRefType() }).Invoke(this, args);
-			//if ((bool)result)
-			//	data = (NetSegment)args[1];
+			// rather hacky call to base.UpdateSegmentFlags(segmentID, ref data);
 			try
 			{
-				MethodInfo method = typeof(RoadBaseAI).GetMethod("UpdateSegmentFlags", new[] { typeof(ushort), typeof(NetSegment).MakeByRefType()});
-				Log.Debug($"{method}");
-				IntPtr ptr = method.MethodHandle.GetFunctionPointer();
-				Log.Debug($"{ptr}");
-				Action<ushort, NetSegment> baseUpdate = (Action<ushort, NetSegment>)Activator.CreateInstance(typeof(Action<ushort, NetSegment>), this, ptr);
-				Log.Debug($"{baseUpdate}");
-				baseUpdate(segmentID, data);
+				MethodInfo method = typeof(RoadBaseAI).GetMethod("UpdateSegmentFlags", BindingFlags.Instance | BindingFlags.Public, null, new[] { typeof(ushort), typeof(NetSegment).MakeByRefType()}, null);
+				//Log.Info($"{method}");
+				if (method != null) { 
+					IntPtr ptr = method.MethodHandle.GetFunctionPointer();
+                    ((Action<ushort, NetSegment>)Activator.CreateInstance(typeof(Action<ushort, NetSegment>), this, ptr))?.Invoke(segmentID, data);
+                }
 			}
 			catch (Exception e)
 			{

@@ -30,5 +30,10 @@ namespace SharedStopEnabler.StopSelection
         {
             return Singleton<SharedStopsTool>.instance.sharedStopSegments.Where(s => s.m_lines.ContainsKey(line)).ToList();
         }
+
+        public static bool IsSharedStopTransport(this TransportInfo.TransportType transportType)
+        {
+            return transportType == TransportInfo.TransportType.Bus || transportType == TransportInfo.TransportType.Tram || transportType == TransportInfo.TransportType.TouristBus || transportType == TransportInfo.TransportType.Trolleybus;
+        }
     }
 }

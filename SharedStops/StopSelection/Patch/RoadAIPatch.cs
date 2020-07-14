@@ -24,11 +24,8 @@ namespace SharedStopEnabler.StopSelection.Patch
 				//Log.Info($"{method}");
 				if (method != null) { 
 					IntPtr ptr = method.MethodHandle.GetFunctionPointer();
-					//Log.Info($"{ptr}");
-					Action<ushort, NetSegment> baseUpdate = (Action<ushort, NetSegment>)Activator.CreateInstance(typeof(Action<ushort, NetSegment>), this, ptr);
-					//Log.Info($"{baseUpdate}");
-					baseUpdate(segmentID, data);
-				}
+                    ((Action<ushort, NetSegment>)Activator.CreateInstance(typeof(Action<ushort, NetSegment>), this, ptr))?.Invoke(segmentID, data);
+                }
 			}
 			catch (Exception e)
 			{

@@ -32,7 +32,6 @@ namespace SharedStopEnabler
                     Log.Info("Patches deployed");
                 }
                 else Log.Info("Harmony not found");
-                Redirector<RoadAIDetour>.Deploy();
             }
             catch (Exception e)
             {
@@ -49,7 +48,6 @@ namespace SharedStopEnabler
                     Log.Info("patching reverted");
                 }
                 else Log.Info("Harmony not found");
-                Redirector<RoadAIDetour>.Revert();
             }
             catch (Exception e)
             {

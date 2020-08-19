@@ -92,6 +92,7 @@ namespace SharedStopEnabler.StopSelection.Patch
                     uint lane = Singleton<NetManager>.instance.m_nodes.m_buffer[stops].m_lane;
                     Vector3 position = Singleton<NetManager>.instance.m_nodes.m_buffer[stops].m_position;
                     ushort segment = Singleton<NetManager>.instance.m_lanes.m_buffer[lane].m_segment;
+                    if (segment == raycastOutput.m_netSegment) return;
                     Log.Debug($"old lane {lane} on segment {segment}");
                     if (Singleton<NetManager>.instance.m_segments.m_buffer[(int)raycastOutput.m_netSegment].GetClosestLanePosition(position, NetInfo.LaneType.Vehicle, ___m_prefab.m_vehicleType, out _, out _, out laneindex, out _))
                     {

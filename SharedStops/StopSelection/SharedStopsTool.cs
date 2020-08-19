@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 using SharedStopEnabler.StopSelection.AI;
+using ColossalFramework.UI;
 
 namespace SharedStopEnabler.StopSelection
 {
@@ -32,6 +33,7 @@ namespace SharedStopEnabler.StopSelection
 
                 StopsUtil.InitLaneProps("Tram Stop");
                 InitStopTypes();
+                RecalculateSharedStopSegments();
 
                 Log.Info($"successful startup");
             }
@@ -39,6 +41,37 @@ namespace SharedStopEnabler.StopSelection
             {
                 Log.Error($"Failed on startup {e}");
             }
+        }
+
+        private void RecalculateSharedStopSegments()
+        {
+            foreach (TransportLine line in Singleton<TransportManager>.instance.m_lines.m_buffer)
+            {
+                if (line.Info.m_class.m_subService != ItemClass.SubService.PublicTransportBus && line.Info.m_class.m_subService != ItemClass.SubService.PublicTransportTram &&
+                    line.Info.m_class.m_subService != ItemClass.SubService.PublicTransportTrolleybus && line.Info.m_class.name != "Sightseeing Bus Line") continue;
+
+                ushort lineID = Singleton<NetManager>.instance.m_nodes.m_buffer[line.m_stops].m_transportLine;
+                Log.Debug($"Checking line {lineID}, {line.Info.m_class.m_subService}, {line.m_stops}");
+
+                if (lineID == 0) continue;
+                ushort stops = line.m_stops;
+                if (stops == 0) continue;
+                for (;;)
+                {
+                    stops = TransportLine.GetNextStop(stops);
+                    uint lane = Singleton<NetManager>.instance.m_nodes.m_buffer[stops].m_lane;
+                    Vector3 position = Singleton<NetManager>.instance.m_nodes.m_buffer[stops].m_position;
+                    ushort segment = Singleton<NetManager>.instance.m_lanes.m_buffer[lane].m_segment;
+                    Log.Debug($"stop {stops} on lane {lane} on segment {segment}");
+                    if (Singleton<NetManager>.instance.m_segments.m_buffer[segment].GetClosestLanePosition(position, NetInfo.LaneType.Vehicle, line.Info.m_vehicleType, out _, out _, out int laneindex, out _))
+                    {
+                        NetInfo.Direction direction = Singleton<NetManager>.instance.m_segments.m_buffer[segment].Info.m_lanes[laneindex].m_direction;
+                        Singleton<SharedStopsTool>.instance.AddSharedStop(segment, (SharedStopSegment.SharedStopTypes)Enum.Parse(typeof(SharedStopSegment.SharedStopTypes), line.Info.m_transportType.ToString()), lineID, direction);
+                    }
+                    if (stops == line.m_stops) break;
+                }
+                Log.Debug($"Stops found {sharedStopSegments.Count}");
+            } 
         }
 
         public void AddSharedStop(ushort segment, SharedStopSegment.SharedStopTypes sharedStopTypes, ushort line, NetInfo.Direction direction)

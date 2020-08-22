@@ -1,15 +1,10 @@
 ﻿using System.Linq;
-using ColossalFramework.UI;
 using ICities;
-using UnityEngine;
 using SharedStopEnabler.StopSelection;
 using SharedStopEnabler.Util;
 using System;
-using System.Reflection;
 using ColossalFramework;
 using CitiesHarmony.API;
-using SharedStopEnabler.RedirectionFramework;
-using SharedStopEnabler.StopSelection.Patch;
 
 namespace SharedStopEnabler
 {

@@ -1,13 +1,6 @@
 ﻿using ColossalFramework;
 using HarmonyLib;
 using SharedStopEnabler.Util;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using SharedStopEnabler.RedirectionFramework.Attributes;
-using UnityEngine;
 
 namespace SharedStopEnabler.StopSelection.Patch
 {

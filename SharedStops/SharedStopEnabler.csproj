@@ -58,18 +58,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="LoadingExtension.cs" />
-    <Compile Include="RedirectionFramework\AssemblyRedirector.cs" />
-    <Compile Include="RedirectionFramework\Attributes\IgnoreConditionAttribute.cs" />
-    <Compile Include="RedirectionFramework\Attributes\IgnoreConditions\DisableAttribute.cs" />
-    <Compile Include="RedirectionFramework\Attributes\RedirectAttribute.cs" />
-    <Compile Include="RedirectionFramework\Attributes\RedirectMethodAttribute.cs" />
-    <Compile Include="RedirectionFramework\Attributes\RedirectReverseAttribute.cs" />
-    <Compile Include="RedirectionFramework\Attributes\TargetTypeAttribute.cs" />
-    <Compile Include="RedirectionFramework\Extensions\TypeExtension.cs" />
-    <Compile Include="RedirectionFramework\RedirectionHelper.cs" />
-    <Compile Include="RedirectionFramework\RedirectionUtil.cs" />
-    <Compile Include="RedirectionFramework\Redirector.cs" />
-    <Compile Include="RedirectionFramework\Tuple.cs" />
     <Compile Include="SharedStops.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StopSelection\AI\RoadBridgeAIExt.cs" />

@@ -122,15 +122,20 @@ namespace SharedStopEnabler.StopSelection
         {
             if (sharedStopSegments.Any(s => s.m_segment == segment))
             {
-                var sharedStopSegment = sharedStopSegments[sharedStopSegments.FindIndex(s => s.m_segment == segment)];
-                if (direction == NetInfo.Direction.Forward) sharedStopSegment.m_sharedStopTypesForward &= ~sharedStopTypes;
-                else if (direction == NetInfo.Direction.Backward) sharedStopSegment.m_sharedStopTypesBackward &= ~sharedStopTypes;
+                SharedStopSegment sharedStopSegment = sharedStopSegments[sharedStopSegments.FindIndex(s => s.m_segment == segment)];
                 if (sharedStopSegment.m_lines.Keys.Contains(line)) //TODO: remove unnecessary checks
                 {
                     sharedStopSegment.m_lines[line] &= ~direction;
                     if (sharedStopSegment.m_lines[line] == NetInfo.Direction.None)
                     {
                         sharedStopSegment.m_lines.Remove(line);
+                    }
+                    if (!sharedStopSegment.m_lines.Keys.Any(segLine => Singleton<TransportManager>.instance.m_lines.m_buffer[segLine].Info.m_transportType == (TransportInfo.TransportType)Enum.Parse(typeof(TransportInfo.TransportType), sharedStopTypes.ToString())
+                       && (sharedStopSegment.m_lines[segLine] & direction) == direction))
+                    {
+                        Log.Debug($"Remove sharedstoptype {sharedStopTypes}");
+                        if (direction == NetInfo.Direction.Forward) sharedStopSegment.m_sharedStopTypesForward &= ~sharedStopTypes;
+                        else if (direction == NetInfo.Direction.Backward) sharedStopSegment.m_sharedStopTypesBackward &= ~sharedStopTypes;
                     }
                 }
                 if (sharedStopSegment.m_lines.Count == 0)

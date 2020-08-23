@@ -1,5 +1,15 @@
 ## Changelog
 
+### [1.1.0] - 2020-08-23
+
+#### Added
+- load old shared stops at startup
+- copy shared stops on updating segments
+#### Fixed
+- wrong stop layouts on moving stops ([#10](https://github.com/CodeBardian/SharedStopEnabler/issues/10))
+- several minor fixes regarding removal of stops and transport lines
+
+
 ### [1.0.4] - 2020-07-14
 
 #### Fixed

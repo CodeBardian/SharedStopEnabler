@@ -1,15 +1,10 @@
 ﻿using System.Linq;
-using ColossalFramework.UI;
 using ICities;
-using UnityEngine;
 using SharedStopEnabler.StopSelection;
 using SharedStopEnabler.Util;
 using System;
-using System.Reflection;
 using ColossalFramework;
 using CitiesHarmony.API;
-using SharedStopEnabler.RedirectionFramework;
-using SharedStopEnabler.StopSelection.Patch;
 
 namespace SharedStopEnabler
 {
@@ -32,7 +27,6 @@ namespace SharedStopEnabler
                     Log.Info("Patches deployed");
                 }
                 else Log.Info("Harmony not found");
-                Redirector<RoadAIDetour>.Deploy();
             }
             catch (Exception e)
             {
@@ -49,7 +43,6 @@ namespace SharedStopEnabler
                     Log.Info("patching reverted");
                 }
                 else Log.Info("Harmony not found");
-                Redirector<RoadAIDetour>.Revert();
             }
             catch (Exception e)
             {

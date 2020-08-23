@@ -65,13 +65,13 @@
     <Compile Include="StopSelection\Patch\NetToolPatch.cs" />
     <Compile Include="StopSelection\Patch\PathManagerPatch.cs" />
     <Compile Include="StopSelection\Patch\TransportLinePatch.cs" />
+    <Compile Include="StopSelection\Patch\TransportManagerPatch.cs" />
     <Compile Include="StopSelection\StopsUtil.cs" />
     <Compile Include="StopSelection\Patch\RoadAIPatch.cs" />
     <Compile Include="StopSelection\Patch\TransportToolPatch.cs" />
     <Compile Include="StopSelection\SharedStopSegment.cs" />
     <Compile Include="StopSelection\SharedStopsTool.cs" />
     <Compile Include="StopSelection\StopSelectionExtensions.cs" />
-    <Compile Include="StopSelection\TransportLineObserver.cs" />
     <Compile Include="Util\ModCompat.cs" />
     <Compile Include="Util\Log.cs" />
     <Compile Include="Util\Patcher.cs" />

@@ -21,8 +21,8 @@ jobs:
         
       - name: Get Version Number
         id: get_version_number
-        run: |
-          echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+        shell: bash
       
       - name: Pack Assets
         id: pack_assets

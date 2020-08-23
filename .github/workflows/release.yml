@@ -1,0 +1,47 @@
+on:
+  push:
+    tags:
+    - 'v*'
+
+name: Release
+
+jobs:
+  build:
+    name: Upload Release Asset
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        
+      - name: Build Solution
+        run: msbuild SharedStopEnabler.sln /restore /p:Configuration=Release
+      
+      - name: Pack Assets
+        id: pack_assets
+        run: Compress-Archive SharedStopEnabler.dll SharedStopEnabler.${{ github.ref }}.zip
+        working-directory: SharedStops/bin/Release
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: |
+            Changes in this Release
+            - see [Changelog](https://github.com/CodeBardian/SharedStopEnabler/blob/master/CHANGELOG.md)
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        id: upload-release-asset 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} 
+          asset_path: SharedStops/bin/Release/SharedStopEnabler.${{ github.ref }}.zip
+          asset_name: SharedStopEnabler.${{ github.ref }}.zip
+          asset_content_type: application/zip

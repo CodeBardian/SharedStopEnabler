@@ -18,10 +18,15 @@ jobs:
         
       - name: Build Solution
         run: msbuild SharedStopEnabler.sln /restore /p:Configuration=Release
+        
+      - name: Get Version Number
+        id: get_version_number
+        run: |
+          echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
       
       - name: Pack Assets
         id: pack_assets
-        run: Compress-Archive SharedStopEnabler.dll SharedStopEnabler.${{ github.ref }}.zip
+        run: Compress-Archive SharedStopEnabler.dll SharedStopEnabler.${{ steps.get_version_number.outputs.VERSION }}.zip
         working-directory: SharedStops/bin/Release
 
       - name: Create Release
@@ -30,8 +35,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          tag_name: ${{ steps.get_version_number.outputs.VERSION }}
+          release_name: Release ${{ steps.get_version_number.outputs.VERSION }}
           body: |
             Changes in this Release
             - see [Changelog](https://github.com/CodeBardian/SharedStopEnabler/blob/master/CHANGELOG.md)
@@ -45,6 +50,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} 
-          asset_path: SharedStops/bin/Release/SharedStopEnabler.${{ github.ref }}.zip
-          asset_name: SharedStopEnabler.${{ github.ref }}.zip
+          asset_path: SharedStops/bin/Release/SharedStopEnabler.${{ steps.get_version_number.outputs.VERSION }}.zip
+          asset_name: SharedStopEnabler.${{ steps.get_version_number.outputs.VERSION }}.zip
           asset_content_type: application/zip

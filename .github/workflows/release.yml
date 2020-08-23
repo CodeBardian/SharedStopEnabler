@@ -12,6 +12,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+    
+      - name: setup-msbuild
+        uses: microsoft/setup-msbuild@v1.0.1
         
       - name: Build Solution
         run: msbuild SharedStopEnabler.sln /restore /p:Configuration=Release

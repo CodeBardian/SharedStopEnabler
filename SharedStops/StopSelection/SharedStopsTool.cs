@@ -72,11 +72,14 @@ namespace SharedStopEnabler.StopSelection
                         }
                         NetSegment data = Singleton<NetManager>.instance.m_segments.m_buffer[segment];
                         int index = Singleton<SharedStopsTool>.instance.sharedStopSegments.FindIndex(s => s.m_segment == segment);
-                        var inverted = (data.m_flags & NetSegment.Flags.Invert) == NetSegment.Flags.Invert;
-                        Singleton<SharedStopsTool>.instance.sharedStopSegments[index].UpdateStopFlags(inverted, out NetSegment.Flags stopflags);
-                        Log.Debug($"present flags: {data.m_flags}");
-                        data.m_flags |= stopflags;
-                        Log.Debug($"new flags: {data.m_flags}");
+                        if (index != -1)
+                        {
+                            var inverted = (data.m_flags & NetSegment.Flags.Invert) == NetSegment.Flags.Invert;
+                            Singleton<SharedStopsTool>.instance.sharedStopSegments[index].UpdateStopFlags(inverted, out NetSegment.Flags stopflags);
+                            Log.Debug($"present flags: {data.m_flags}");
+                            data.m_flags |= stopflags;
+                            Log.Debug($"new flags: {data.m_flags}");
+                        }
                         //RoadAI roadAi = Singleton<NetManager>.instance.m_segments.m_buffer[segment].Info.m_netAI as RoadAI;
                         //roadAi?.UpdateSegmentFlags(segment, ref data);
                     }

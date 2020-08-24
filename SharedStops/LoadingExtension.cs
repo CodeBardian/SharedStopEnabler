@@ -43,6 +43,7 @@ namespace SharedStopEnabler
                     Log.Info("patching reverted");
                 }
                 else Log.Info("Harmony not found");
+                ModCompat.foundMods.Clear();
             }
             catch (Exception e)
             {
@@ -56,6 +57,8 @@ namespace SharedStopEnabler
         public override void OnReleased()
         {
             UnityEngine.Object.DestroyImmediate(Singleton<SharedStopsTool>.instance);
+            Log.Info("OnReleased");
+            base.OnReleased();
         }
     }
 }

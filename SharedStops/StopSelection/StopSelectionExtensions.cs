@@ -23,6 +23,8 @@ namespace SharedStopEnabler.StopSelection
 
         public static bool IsSharedStopSegment(this NetSegment netSegment, int segment)
         {
+            if (Singleton<SharedStopsTool>.instance.sharedStopSegments == null)
+                return false;
             return Singleton<SharedStopsTool>.instance.sharedStopSegments.Any(s => s.m_segment == segment); 
         }
 

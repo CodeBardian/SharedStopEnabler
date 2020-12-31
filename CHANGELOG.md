@@ -1,5 +1,10 @@
 ## Changelog
 
+### [1.1.1] - 2020-12-31
+
+#### Fixed
+- exception on mod startup caused by custom road assets without proper lane config ([#13](https://github.com/CodeBardian/SharedStopEnabler/issues/13)). Thanks @GameBurrow.
+
 ### [1.1.0] - 2020-08-23
 
 #### Added

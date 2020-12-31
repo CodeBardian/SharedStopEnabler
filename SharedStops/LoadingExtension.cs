@@ -55,7 +55,7 @@ namespace SharedStopEnabler
         }
 
         public override void OnReleased()
-        {
+        { 
             UnityEngine.Object.DestroyImmediate(Singleton<SharedStopsTool>.instance);
             Log.Info("OnReleased");
             base.OnReleased();

@@ -49,18 +49,30 @@ namespace SharedStopEnabler.StopSelection
 
         private static void EnableStops(NetInfo info, VehicleInfo.VehicleType firstStopType, VehicleInfo.VehicleType middleStopType, VehicleInfo.VehicleType secondStopType)
         {
-            if (info == null) return;
-            for (int i = 1; i < info.m_lanes.Length - 2; i++)
+            try
             {
-                if (info.m_lanes[info.m_sortedLanes[i]].m_vehicleType == VehicleInfo.VehicleType.None)
+                if (info == null) return;
+                if (info.m_lanes.Length == 0 || info.m_sortedLanes.Length == 0) 
                 {
-                    info.m_lanes[info.m_sortedLanes[i]].m_stopType = middleStopType;
+                    Log.Error($"[SSE] custom road {info} without lanes found. Can't enable Shared Stops!");
+                    return; 
                 }
+                for (int i = 1; i < info.m_lanes.Length - 2; i++)
+                {
+                    if (info.m_lanes[info.m_sortedLanes[i]].m_vehicleType == VehicleInfo.VehicleType.None)
+                    {
+                        info.m_lanes[info.m_sortedLanes[i]].m_stopType = middleStopType;
+                    }
+                }
+                info.m_lanes[info.m_sortedLanes[0]].m_stopType = firstStopType;
+                info.m_lanes[info.m_sortedLanes[0]].m_stopOffset = 0f;
+                info.m_lanes[info.m_sortedLanes[info.m_sortedLanes.Length - 1]].m_stopType = secondStopType;
+                info.m_lanes[info.m_sortedLanes[info.m_sortedLanes.Length - 1]].m_stopOffset = 0f;
             }
-            info.m_lanes[info.m_sortedLanes[0]].m_stopType = firstStopType;
-            info.m_lanes[info.m_sortedLanes[0]].m_stopOffset = 0f;
-            info.m_lanes[info.m_sortedLanes[info.m_sortedLanes.Length - 1]].m_stopType = secondStopType;
-            info.m_lanes[info.m_sortedLanes[info.m_sortedLanes.Length - 1]].m_stopOffset = 0f;
+            catch (Exception e)
+            {
+                Log.Error($"Failed on EnableStops {e}");
+            }
         }
 
         public static void InitLaneProps(string propName)

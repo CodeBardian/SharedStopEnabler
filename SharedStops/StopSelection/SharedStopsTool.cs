@@ -28,8 +28,8 @@ namespace SharedStopEnabler.StopSelection
         {
             try
             {
-                StopsUtil.EnableElevatedStops();
                 sharedStopSegments = new List<SharedStopSegment>();
+                StopsUtil.EnableElevatedStops();
 
                 StopsUtil.InitLaneProps("Tram Stop");
                 InitStopTypes();
@@ -40,6 +40,20 @@ namespace SharedStopEnabler.StopSelection
             catch (Exception e)
             {
                 Log.Error($"Failed on startup {e}");
+            }
+        }
+
+        public void OnDestroy()
+        {
+            try
+            {
+                sharedStopSegments.Clear();
+                m_lastEditPoint = Vector3.zero;
+                Log.Info($"on destroy finished");
+            }
+            catch (Exception e)
+            {
+                Log.Error($"Failed on destroy {e}");
             }
         }
 

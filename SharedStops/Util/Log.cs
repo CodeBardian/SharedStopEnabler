@@ -47,16 +47,23 @@ namespace SharedStopEnabler.Util
         public static void Info(string s)
         {
             WriteToFile(s, LogType.Info);
+            #if DEBUG
+                UnityEngine.Debug.Log(s);
+            #endif
         }
 
         public static void Warning(string s)
         {
             WriteToFile(s, LogType.Warning);
+            #if DEBUG
+                UnityEngine.Debug.Log(s);
+            #endif
         }
 
         public static void Error(string s)
         {
             WriteToFile(s, LogType.Error);
+            UnityEngine.Debug.Log(s);
         }
 
         private static void WriteToFile(string log, LogType type)

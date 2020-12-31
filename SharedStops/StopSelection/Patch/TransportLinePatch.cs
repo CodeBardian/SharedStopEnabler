@@ -39,7 +39,7 @@ namespace SharedStopEnabler.StopSelection.Patch
             uint lane = Singleton<NetManager>.instance.m_nodes.m_buffer[stop].m_lane;
             Vector3 position = Singleton<NetManager>.instance.m_nodes.m_buffer[stop].m_position;
             ushort segment = Singleton<NetManager>.instance.m_lanes.m_buffer[lane].m_segment;
-            if (!Singleton<SharedStopsTool>.instance.sharedStopSegments.Any(s => s.m_segment == segment)) return true;
+            if (Singleton<SharedStopsTool>.instance.sharedStopSegments != null && !Singleton<SharedStopsTool>.instance.sharedStopSegments.Any(s => s.m_segment == segment)) return true;
             if (Singleton<NetManager>.instance.m_segments.m_buffer[segment].GetClosestLanePosition(position, NetInfo.LaneType.Vehicle, line.Info.m_vehicleType, out _, out _, out int laneindex, out _))
             {
                 NetInfo.Direction direction = Singleton<NetManager>.instance.m_segments.m_buffer[segment].Info.m_lanes[laneindex].m_direction;

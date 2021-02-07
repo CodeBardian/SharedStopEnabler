@@ -23,18 +23,19 @@ namespace SharedStopEnabler.Util
 
             ModCompat.ScanMods();
 
+            Log.Info("Manual patching TransportTool_GetStopPosition...");
+            MethodInfo gspMethod = typeof(TransportTool).GetMethod("GetStopPosition", BindingFlags.Instance | BindingFlags.NonPublic);
+            MethodInfo gspPostfix = typeof(TransportToolPatch_GetStopPosition).GetMethod("Postfix", BindingFlags.Static | BindingFlags.NonPublic);
+
             if (ModCompat.foundMods.ContainsKey(1394468624) && ModCompat.foundMods[1394468624].isEnabled)
             {
                 Log.Info("AdvancedStopSelection found. Applying patch...");
-
-                MethodInfo original = Type.GetType("ImprovedStopSelection.Detour.TransportToolDetour, ImprovedStopSelection").GetMethod("GetStopPosition", BindingFlags.Instance | BindingFlags.NonPublic);
-                Log.Info($"{original}");
-                MethodInfo postfix = typeof(TransportToolPatch_GetStopPosition).GetMethod("Postfix", BindingFlags.Static | BindingFlags.NonPublic);
-
-                Log.Info($"{original}, {postfix}");
-
-                harmony.Patch(original, postfix: new HarmonyMethod(postfix));
+                Type type = Assembly.Load("ImprovedStopSelection").GetType("ImprovedStopSelection.Detour.TransportToolDetour");
+                Log.Info($"{type}");
+                gspMethod = type.GetMethod("GetStopPosition", BindingFlags.Instance | BindingFlags.NonPublic);
             }
+            Log.Info($"{gspMethod}, {gspPostfix}");
+            harmony.Patch(gspMethod, postfix: new HarmonyMethod(gspPostfix));
         }
 
         public static void UnpatchAll()

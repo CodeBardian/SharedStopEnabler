@@ -27,8 +27,8 @@ jobs:
       - name: Pack Assets
         id: pack_assets
         run: |
-          - Compress-Archive SharedStopEnabler.dll SharedStopEnabler${{ steps.get_version_number.outputs.VERSION }}.zip
-          - Compress-Archive CitiesHarmony.API.dll -Update -DestinationPath SharedStopEnabler${{ steps.get_version_number.outputs.VERSION }}.zip
+          Compress-Archive SharedStopEnabler.dll SharedStopEnabler${{ steps.get_version_number.outputs.VERSION }}.zip
+          Compress-Archive CitiesHarmony.API.dll -Update -DestinationPath SharedStopEnabler${{ steps.get_version_number.outputs.VERSION }}.zip
         working-directory: SharedStops/bin/Release
 
       - name: Create Release

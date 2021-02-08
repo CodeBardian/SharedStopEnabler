@@ -1,5 +1,12 @@
 ## Changelog
 
+### [1.1.2] - 2021-02-07
+
+#### Changed
+- upgrade harmony to 2.0.4
+#### Fixed
+- incompatibility with advanced stop selection mod. Thanks @Teach via steam.
+
 ### [1.1.1] - 2020-12-31
 
 #### Fixed

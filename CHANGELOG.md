@@ -1,4 +1,8 @@
 ## Changelog
+### [1.1.3] - 2021-02-07
+
+#### Changed
+- bump CitiesHarmony to 2.0.4-2
 
 ### [1.1.2] - 2021-02-07
 

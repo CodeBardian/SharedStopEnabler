@@ -17,13 +17,6 @@ namespace SharedStopEnabler.StopSelection
 
         public List<SharedStopSegment> sharedStopSegments;
 
-        public Vector3 m_lastEditPoint;
-
-        private bool additionalStopsSet = false;
-        private bool additionalStopsRemoved = true;
-
-        private int m_building => (int)typeof(TransportTool).GetField("m_building", BindingFlags.Public | BindingFlags.Instance).GetValue(Singleton<TransportTool>.instance);
-
         public void Start()
         {
             try
@@ -48,7 +41,6 @@ namespace SharedStopEnabler.StopSelection
             try
             {
                 sharedStopSegments.Clear();
-                m_lastEditPoint = Vector3.zero;
                 Log.Info($"on destroy finished");
             }
             catch (Exception e)
@@ -82,7 +74,7 @@ namespace SharedStopEnabler.StopSelection
                         if (Singleton<NetManager>.instance.m_segments.m_buffer[segment].GetClosestLanePosition(position, NetInfo.LaneType.Vehicle, line.Info.m_vehicleType, out _, out _, out int laneindex, out _))
                         {
                             NetInfo.Direction direction = Singleton<NetManager>.instance.m_segments.m_buffer[segment].Info.m_lanes[laneindex].m_direction;
-                            Singleton<SharedStopsTool>.instance.AddSharedStop(segment, (SharedStopSegment.SharedStopTypes)Enum.Parse(typeof(SharedStopSegment.SharedStopTypes), line.Info.m_transportType.ToString()), lineID, direction);
+                            Singleton<SharedStopsTool>.instance.AddSharedStop(segment, line.Info.m_transportType.Convert(), lineID, direction);
                         }
                         NetSegment data = Singleton<NetManager>.instance.m_segments.m_buffer[segment];
                         int index = Singleton<SharedStopsTool>.instance.sharedStopSegments.FindIndex(s => s.m_segment == segment);
@@ -255,48 +247,6 @@ namespace SharedStopEnabler.StopSelection
                 return true;
             }
             return false;
-        }
-
-        public int GetLineCount(Vector3 stopPosition, Vector3 stopDirection, TransportInfo.TransportType transportType)
-        {
-            NetManager instance = Singleton<NetManager>.instance;
-            TransportManager instance2 = Singleton<TransportManager>.instance;
-            stopDirection.Normalize();
-            Segment3 segment = new Segment3(stopPosition - stopDirection * 16f, stopPosition + stopDirection * 16f);
-            Vector3 vector = segment.Min();
-            Vector3 vector2 = segment.Max();
-            int num = Mathf.Max((int)((vector.x - 4f) / 64f + 135f), 0);
-            int num2 = Mathf.Max((int)((vector.z - 4f) / 64f + 135f), 0);
-            int num3 = Mathf.Min((int)((vector2.x + 4f) / 64f + 135f), 269);
-            int num4 = Mathf.Min((int)((vector2.z + 4f) / 64f + 135f), 269);
-            int num5 = 0;
-            for (int i = num2; i <= num4; i++)
-            {
-                for (int j = num; j <= num3; j++)
-                {
-                    ushort num6 = instance.m_nodeGrid[i * 270 + j];
-                    int num7 = 0;
-                    while (num6 != 0)
-                    {
-                        ushort transportLine = instance.m_nodes.m_buffer[(int)num6].m_transportLine;
-                        if (transportLine != 0)
-                        {
-                            TransportInfo info = instance2.m_lines.m_buffer[(int)transportLine].Info;
-                            if (info.m_transportType == transportType && (instance2.m_lines.m_buffer[(int)transportLine].m_flags & TransportLine.Flags.Temporary) == TransportLine.Flags.None && segment.DistanceSqr(instance.m_nodes.m_buffer[(int)num6].m_position) < 16f)
-                            {
-                                num5++;
-                            }
-                        }
-                        num6 = instance.m_nodes.m_buffer[(int)num6].m_nextGridNode;
-                        if (++num7 >= 32768)
-                        {
-                            CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + Environment.StackTrace);
-                            break;
-                        }
-                    }
-                }
-            }
-            return num5;
         }
     }
 }

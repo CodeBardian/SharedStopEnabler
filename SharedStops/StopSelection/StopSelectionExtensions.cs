@@ -16,9 +16,9 @@ namespace SharedStopEnabler.StopSelection
             return (transportLine.m_flags & flag) == flag;
         }
 
-        public static bool HasStops(this NetSegment netSegment, int segment)
+        public static bool HasStops(this NetSegment netSegment)
         {
-            return (Singleton<NetManager>.instance.m_segments.m_buffer[(int)segment].m_flags & NetSegment.Flags.StopAll) != NetSegment.Flags.None;
+            return (netSegment.m_flags & NetSegment.Flags.StopAll) != NetSegment.Flags.None;
         }
 
         public static bool IsSharedStopSegment(this NetSegment netSegment, int segment)
@@ -35,7 +35,17 @@ namespace SharedStopEnabler.StopSelection
 
         public static bool IsSharedStopTransport(this TransportInfo.TransportType transportType)
         {
-            return transportType == TransportInfo.TransportType.Bus || transportType == TransportInfo.TransportType.Tram || transportType == TransportInfo.TransportType.TouristBus || transportType == TransportInfo.TransportType.Trolleybus;
+            return transportType == TransportInfo.TransportType.Bus 
+                || transportType == TransportInfo.TransportType.Tram 
+                || transportType == TransportInfo.TransportType.TouristBus 
+                || transportType == TransportInfo.TransportType.Trolleybus;
+        }
+
+        public static bool IsSharedStopTransport(this VehicleInfo.VehicleType vehicleType)
+        {
+            return vehicleType == VehicleInfo.VehicleType.Car
+                || vehicleType == VehicleInfo.VehicleType.Tram
+                || vehicleType == VehicleInfo.VehicleType.Trolleybus;
         }
     }
 }

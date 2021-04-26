@@ -166,55 +166,6 @@ namespace SharedStopEnabler.StopSelection
             return false;
         }
 
-        public void GetStopPosition(ref bool result, TransportInfo info, ushort segment, ushort building, ushort firstStop, ref Vector3 hitPos, out bool fixedPlatform)
-        {
-            NetManager netManager = Singleton<NetManager>.instance;
-            BuildingManager buildingManager = Singleton<BuildingManager>.instance;
-
-            fixedPlatform = false;
-
-            if ((int)segment != 0) //hover segment
-            {
-                if ((netManager.m_segments.m_buffer[(int)segment].m_flags & NetSegment.Flags.Untouchable) != NetSegment.Flags.None)
-                {
-                    building = NetSegment.FindOwnerBuilding(segment, 363f);
-                    if ((int)building != 0)  //found nearby building
-                    {
-                        BuildingInfo info1 = buildingManager.m_buildings.m_buffer[(int)building].Info;
-                        TransportInfo transportLineInfo1 = info1.m_buildingAI.GetTransportLineInfo();
-                        TransportInfo transportLineInfo2 = info1.m_buildingAI.GetSecondaryTransportLineInfo();
-                        if (transportLineInfo1 != null && transportLineInfo1.m_transportType == info.m_transportType ||  transportLineInfo2 != null && transportLineInfo2.m_transportType == info.m_transportType)
-                            segment = (ushort)0; //metro stop results in segment = 0
-                        else
-                            building = (ushort)0;
-                    }
-                }
-           
-                if ((int)segment != 0 && netManager.m_segments.m_buffer[(int)segment].GetClosestLanePosition(hitPos, NetInfo.LaneType.Pedestrian, VehicleInfo.VehicleType.None, info.m_vehicleType, out Vector3 closestPedestrianLane, out uint laneid1, out int laneIndex1, out _))
-                {
-                    if (netManager.m_segments.m_buffer[(int)segment].GetClosestLanePosition(closestPedestrianLane, NetInfo.LaneType.Vehicle | NetInfo.LaneType.TransportVehicle, info.m_vehicleType, out Vector3 position2, out uint laneID2, out int laneIndex2, out float laneOffset2))
-                    {
-                        NetLane.Flags flags3 = (NetLane.Flags)netManager.m_lanes.m_buffer[(int)segment].m_flags;
-                        flags3 &= NetLane.Flags.Stops;
-                        if (flags3 != NetLane.Flags.None && info.m_stopFlag != NetLane.Flags.None && flags3 != info.m_stopFlag)
-                        {
-                            Log.Debug("Flags set");
-                            result = false;
-                            return;
-                            //return false;
-                        }
-                        float stopOffset = netManager.m_segments.m_buffer[(int)segment].Info.m_lanes[laneIndex2].m_stopOffset;
-                        if ((netManager.m_segments.m_buffer[(int)segment].m_flags & NetSegment.Flags.Invert) != NetSegment.Flags.None)  //check for inverted lanes
-                            stopOffset = -stopOffset;
-                        Log.Debug($"hitpos:{hitPos} pedestrianlane: {laneIndex1}, vehiclelane: {laneIndex2}");
-                        netManager.m_lanes.m_buffer[laneID2].CalculateStopPositionAndDirection(0.5019608f, stopOffset, out hitPos, out Vector3 direction);
-                        fixedPlatform = true;
-                        result = true;
-                    }
-                }
-            }
-        }
-
         private void InitStopTypes()
         {
             NetInfo[] networks = Resources.FindObjectsOfTypeAll<NetInfo>();

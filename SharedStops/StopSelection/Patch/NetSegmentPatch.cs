@@ -16,12 +16,10 @@ namespace SharedStopEnabler.StopSelection.Patch
     {
         static bool Prefix(ref bool __result, NetSegment __instance, Vector3 point, NetInfo.LaneType laneTypes, VehicleInfo.VehicleType vehicleTypes, ref bool requireConnect)
         {
-            if (!requireConnect || !vehicleTypes.IsSharedStopTransport()) return true;
-            __instance.GetClosestLane(0, laneTypes, vehicleTypes, out int laneindex, out uint laneID);
-            ushort segment = Singleton<NetManager>.instance.m_lanes.m_buffer[laneID].m_segment;
-            NetAI roadAi = Singleton<NetManager>.instance.m_segments.m_buffer[segment].Info.m_netAI;
-            if (!(roadAi is RoadBridgeAI)) return true;
-            requireConnect = false;
+            if (requireConnect && vehicleTypes.IsSharedStopTransport() && __instance.Info.m_netAI is RoadBridgeAI)
+            {
+                requireConnect = false;
+            }
             return true;
         }
     }

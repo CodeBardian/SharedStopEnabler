@@ -7,22 +7,48 @@ namespace SharedStopEnabler.StopSelection.Patch
 	[HarmonyPatch(typeof(RoadAI), "UpdateSegmentFlags")]
 	class RoadAIPatch_UpdateSegmentFlags
 	{
-		static bool Prefix(out NetSegment.Flags __state, ushort segmentID, ref NetSegment data)
+		static void Postfix(RoadAI __instance, ushort segmentID, ref NetSegment data)
         {
-			__state = data.m_flags;
-			return true;
-        }
+			if (!data.IsSharedStopSegment(segmentID)) return;
 
-		static void Postfix(NetSegment.Flags __state, ushort segmentID, ref NetSegment data)
-        {
-			if (__state != data.m_flags && data.IsSharedStopSegment((int)segmentID))
-            {
-                var index = Singleton<SharedStopsTool>.instance.sharedStopSegments.FindIndex(s => s.m_segment == segmentID);
-                var inverted = (data.m_flags & NetSegment.Flags.Invert) == NetSegment.Flags.Invert;
-                Singleton<SharedStopsTool>.instance.sharedStopSegments[index].UpdateStopFlags(inverted, out NetSegment.Flags stopflags);
-                data.m_flags |= stopflags;
-                Log.Debug($"oldflags {__state} flags {data.m_flags} newflagsSharedStop {data.m_flags}");
-            }
-        }		
+			NetSegment.Flags flags = data.m_flags & ~(NetSegment.Flags.StopRight | NetSegment.Flags.StopLeft | NetSegment.Flags.StopRight2 | NetSegment.Flags.StopLeft2);
+			if (__instance.m_info.m_lanes != null)
+			{
+				NetManager instance = Singleton<NetManager>.instance;
+				bool flag = (data.m_flags & NetSegment.Flags.Invert) != NetSegment.Flags.None;
+				uint num = instance.m_segments.m_buffer[(int)segmentID].m_lanes;
+				int num2 = 0;
+				while (num2 < __instance.m_info.m_lanes.Length && num != 0U)
+				{
+					NetLane.Flags flags2 = (NetLane.Flags)instance.m_lanes.m_buffer[num].m_flags;
+					if ((flags2 & NetLane.Flags.Stop) != NetLane.Flags.None)
+					{
+						if (__instance.m_info.m_lanes[num2].m_position < 0f != flag)
+						{
+							flags |= NetSegment.Flags.StopLeft;
+						}
+						else
+						{
+							flags |= NetSegment.Flags.StopRight;
+						}
+					}
+					if ((flags2 & NetLane.Flags.Stop2) != NetLane.Flags.None)
+					{
+						if (__instance.m_info.m_lanes[num2].m_position < 0f != flag)
+						{
+							flags |= NetSegment.Flags.StopLeft2;
+						}
+						else
+						{
+							flags |= NetSegment.Flags.StopRight2;
+						}
+					}
+					num = instance.m_lanes.m_buffer[num].m_nextLane;
+					num2++;
+				}
+			}
+			data.m_flags = flags;
+			Log.Debug($"newflags {data.m_flags}");
+		}		
 	}
 }

@@ -34,7 +34,7 @@ namespace SharedStopEnabler.StopSelection.AI
 							flags |= NetSegment.Flags.StopRight;
 						}
 					}
-					else if ((flags2 & NetLane.Flags.Stop2) != NetLane.Flags.None)
+					if ((flags2 & NetLane.Flags.Stop2) != NetLane.Flags.None)
 					{
 						if (roadbridge.m_info.m_lanes[num2].m_position < 0f != flag)
 						{
@@ -48,16 +48,6 @@ namespace SharedStopEnabler.StopSelection.AI
 					num = instance.m_lanes.m_buffer[(int)((UIntPtr)num)].m_nextLane;
 					num2++;
 				}
-			}
-			if (data.IsSharedStopSegment((int)segmentID))
-			{
-				var index = Singleton<SharedStopsTool>.instance.sharedStopSegments.FindIndex(s => s.m_segment == segmentID);
-				var inverted = (flags & NetSegment.Flags.Invert) == NetSegment.Flags.Invert;
-				Singleton<SharedStopsTool>.instance.sharedStopSegments[index].UpdateStopFlags(inverted, out NetSegment.Flags stopflags);
-				data.m_flags = flags;
-				data.m_flags |= stopflags;
-				Log.Debug($"oldflags {oldflags} flags {flags} newflagsSharedStop bridge {data.m_flags}");
-				return;
 			}
 			Log.Debug($"oldflags {oldflags} newflags {flags} on segment {segmentID} bridge");
 			data.m_flags = flags;

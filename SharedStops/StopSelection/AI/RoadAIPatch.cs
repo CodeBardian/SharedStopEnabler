@@ -1,54 +1,52 @@
 ﻿using ColossalFramework;
 using HarmonyLib;
 using SharedStopEnabler.Util;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection.Emit;
 
 namespace SharedStopEnabler.StopSelection.Patch
 {
 	[HarmonyPatch(typeof(RoadAI), "UpdateSegmentFlags")]
 	class RoadAIPatch_UpdateSegmentFlags
 	{
-		static void Postfix(RoadAI __instance, ushort segmentID, ref NetSegment data)
-        {
-			if (!data.IsSharedStopSegment(segmentID)) return;
+		static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+		{
+			bool foundJump = false;
+			int index = -1;
 
-			NetSegment.Flags flags = data.m_flags & ~(NetSegment.Flags.StopRight | NetSegment.Flags.StopLeft | NetSegment.Flags.StopRight2 | NetSegment.Flags.StopLeft2);
-			if (__instance.m_info.m_lanes != null)
+			var codes = new List<CodeInstruction>(instructions);
+			for (int i = 0; i < codes.Count; i++)
 			{
-				NetManager instance = Singleton<NetManager>.instance;
-				bool flag = (data.m_flags & NetSegment.Flags.Invert) != NetSegment.Flags.None;
-				uint num = instance.m_segments.m_buffer[(int)segmentID].m_lanes;
-				int num2 = 0;
-				while (num2 < __instance.m_info.m_lanes.Length && num != 0U)
+				if (foundJump) break;
+				if (codes[i].opcode == OpCodes.Br)
 				{
-					NetLane.Flags flags2 = (NetLane.Flags)instance.m_lanes.m_buffer[num].m_flags;
-					if ((flags2 & NetLane.Flags.Stop) != NetLane.Flags.None)
+
+					for (int j = i + 1; j < codes.Count; j++)
 					{
-						if (__instance.m_info.m_lanes[num2].m_position < 0f != flag)
+						if (codes[j].opcode == OpCodes.Br)
+							break;
+
+						object strOperand = codes[j].operand;
+						if (strOperand != null && strOperand.ToString().Contains("65536"))
 						{
-							flags |= NetSegment.Flags.StopLeft;
-						}
-						else
-						{
-							flags |= NetSegment.Flags.StopRight;
+							index = codes.FindIndex(j, c => c.opcode == OpCodes.Br);
+							foundJump = true;
+							break;
 						}
 					}
-					if ((flags2 & NetLane.Flags.Stop2) != NetLane.Flags.None)
-					{
-						if (__instance.m_info.m_lanes[num2].m_position < 0f != flag)
-						{
-							flags |= NetSegment.Flags.StopLeft2;
-						}
-						else
-						{
-							flags |= NetSegment.Flags.StopRight2;
-						}
-					}
-					num = instance.m_lanes.m_buffer[num].m_nextLane;
-					num2++;
 				}
 			}
-			data.m_flags = flags;
-			Log.Debug($"newflags {data.m_flags}");
-		}		
+
+			if (index > -1)
+			{
+				codes[index].opcode = OpCodes.Nop;
+			}
+			else
+			{
+				Log.Info("Didn't patch UpdateSegmentFlags with transpiler...");
+			}
+			return codes.AsEnumerable();
+		}
 	}
 }

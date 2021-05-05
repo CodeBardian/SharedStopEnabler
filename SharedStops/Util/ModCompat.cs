@@ -22,8 +22,12 @@ namespace SharedStopEnabler.Util
                 {
                     if (mod.isBuiltin || mod.isCameraScript) continue;
 
-                    Log.Info($"found mod {mod.publishedFileID.AsUInt64} {mod.name} {((IUserMod)mod.userModInstance).Name}");
-                    foundMods.Add(mod.publishedFileID.AsUInt64, mod);                  
+                    ulong modID = mod.publishedFileID.AsUInt64;
+                    Log.Info($"found mod {modID} {mod.name} {((IUserMod)mod.userModInstance).Name}");
+                    if (modID != ulong.MaxValue)
+                    {
+                        foundMods.Add(modID, mod);                  
+                    }
                 }
             }
             catch (Exception e)

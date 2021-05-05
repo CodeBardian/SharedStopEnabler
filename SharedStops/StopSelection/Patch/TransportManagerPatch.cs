@@ -29,11 +29,7 @@ namespace SharedStopEnabler.StopSelection.Patch
                 if (lane != 0 && segment != 0)
                 {
                     Log.Debug($"remove stop {stops} on lane {lane} on segment {segment}");
-                    if (Singleton<NetManager>.instance.m_segments.m_buffer[segment].GetClosestLanePosition(position, NetInfo.LaneType.Vehicle, line.Info.m_vehicleType, out _, out _, out int laneindex, out _))
-                    {
-                        NetInfo.Direction direction = Singleton<NetManager>.instance.m_segments.m_buffer[segment].Info.m_lanes[laneindex].m_direction;
-                        Singleton<SharedStopsTool>.instance.RemoveSharedStop(segment, (SharedStopSegment.SharedStopTypes)Enum.Parse(typeof(SharedStopSegment.SharedStopTypes), line.Info.m_transportType.ToString()), lineID, direction);
-                    }
+                    Singleton<SharedStopsTool>.instance.RemoveSharedStop(segment, lineID, lane);
                 }
             }
             return true;

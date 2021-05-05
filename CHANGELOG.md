@@ -1,4 +1,14 @@
 ## Changelog
+
+### [1.1.4] - 2021-05-05
+
+#### Changed
+- removed unnecessary parts of codebase
+- use harmony transpilers instead of bulk copying original code to postfix
+#### Fixed
+- wrong stop props appearing on removing transport lines from a shared stop
+- exception on scanning subscribed mods ([#14](https://github.com/CodeBardian/SharedStopEnabler/issues/14))
+
 ### [1.1.3] - 2021-02-07
 
 #### Changed

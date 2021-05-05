@@ -25,7 +25,7 @@ namespace SharedStopEnabler.Util
 
             Log.Info("Manual patching TransportTool_GetStopPosition...");
             MethodInfo gspMethod = typeof(TransportTool).GetMethod("GetStopPosition", BindingFlags.Instance | BindingFlags.NonPublic);
-            MethodInfo gspPostfix = typeof(TransportToolPatch_GetStopPosition).GetMethod("Postfix", BindingFlags.Static | BindingFlags.NonPublic);
+            MethodInfo gspTranspiler = typeof(TransportToolPatch_GetStopPosition).GetMethod("Transpiler", BindingFlags.Static | BindingFlags.NonPublic);
 
             if (ModCompat.foundMods.ContainsKey(1394468624) && ModCompat.foundMods[1394468624].isEnabled)
             {
@@ -34,8 +34,8 @@ namespace SharedStopEnabler.Util
                 Log.Info($"{type}");
                 gspMethod = type.GetMethod("GetStopPosition", BindingFlags.Instance | BindingFlags.NonPublic);
             }
-            Log.Info($"{gspMethod}, {gspPostfix}");
-            harmony.Patch(gspMethod, postfix: new HarmonyMethod(gspPostfix));
+            Log.Info($"{gspMethod}, {gspTranspiler}");
+            harmony.Patch(gspMethod, transpiler: new HarmonyMethod(gspTranspiler));
         }
 
         public static void UnpatchAll()

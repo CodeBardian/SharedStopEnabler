@@ -24,7 +24,6 @@ namespace SharedStopEnabler.StopSelection.Patch
             {
                 stops = TransportLine.GetNextStop(stops);
                 uint lane = Singleton<NetManager>.instance.m_nodes.m_buffer[stops].m_lane;
-                Vector3 position = Singleton<NetManager>.instance.m_nodes.m_buffer[stops].m_position;
                 ushort segment = Singleton<NetManager>.instance.m_lanes.m_buffer[lane].m_segment;
                 if (lane != 0 && segment != 0)
                 {

@@ -24,7 +24,7 @@ namespace SharedStopEnabler.StopSelection
                 sharedStopSegments = new List<SharedStopSegment>();
                 StopsUtil.EnableElevatedStops();
 
-                StopsUtil.InitLaneProps("Tram Stop");
+                StopsUtil.InitSegments();
                 InitStopTypes();
                 RecalculateSharedStopSegments();
 
@@ -68,8 +68,16 @@ namespace SharedStopEnabler.StopSelection
                     ushort segment = Singleton<NetManager>.instance.m_lanes.m_buffer[lane].m_segment;
                     if (lane != 0 && segment != 0)
                     {
-                        Log.Debug($"stop {stops} on lane {lane} on segment {segment}");
                         Singleton<SharedStopsTool>.instance.AddSharedStop(segment, lineID, lane);
+                        NetSegment segData = Singleton<NetManager>.instance.m_segments.m_buffer[segment];
+                        if (segData.Info.m_netAI is RoadAI roadAI)
+                        {
+                            roadAI.UpdateSegmentFlags(segment, ref Singleton<NetManager>.instance.m_segments.m_buffer[segment]);
+                        }
+                        else if (segData.Info.m_netAI is RoadBridgeAI roadBridgeAI)
+                        {
+                            roadBridgeAI.UpdateSegmentStopFlags(segment, ref Singleton<NetManager>.instance.m_segments.m_buffer[segment]);
+                        }
                     }
                     if (stops == line.m_stops) break;
                 }

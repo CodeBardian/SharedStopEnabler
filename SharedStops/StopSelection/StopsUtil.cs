@@ -75,7 +75,7 @@ namespace SharedStopEnabler.StopSelection
             }
         }
 
-        public static void InitLaneProps(string propName)
+        public static void InitSegments()
         {
             for (uint i = 0; i < PrefabCollection<NetInfo>.LoadedCount(); i++)
             {
@@ -115,9 +115,15 @@ namespace SharedStopEnabler.StopSelection
 
                     foreach (NetLaneProps.Prop laneProp in lane.m_laneProps.m_props)
                     {
-                        if (laneProp != null && laneProp.m_prop != null && laneProp.m_prop.name == propName)
+                        if (laneProp == null || laneProp.m_prop == null) continue;
+
+                        if (laneProp.m_prop.name == "Tram Stop")
                         {
                             laneProp.m_flagsForbidden |= NetLane.Flags.Stop;
+                        }
+                        else if (laneProp.m_prop.name == "Bus Stop Large" || laneProp.m_prop.name == "Bus Stop Small")
+                        {
+                            laneProp.m_flagsForbidden &= ~NetLane.Flags.Stop2;
                         }
                     }
                 }

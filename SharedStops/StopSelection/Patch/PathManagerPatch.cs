@@ -33,16 +33,12 @@ namespace SharedStopEnabler.StopSelection.Patch
                 int stopLane = Array.FindIndex(segment.Info.m_sortedLanes, s => s == stop);
                 int drivingLane = Array.FindIndex(segment.Info.m_sortedLanes, s => s == laneindex);
 
-                Log.Debug($"stop:{pathPosA.m_lane} stopsort:{stopLane} drive:{laneindex} drivesort:{drivingLane}");
-
                 if (dir == NetInfo.Direction.Backward && stopLane > drivingLane)
                 {
                     pathPosA.m_lane = (byte)segment.Info.m_sortedLanes[drivingLane - 1];
                 }
                 else if (dir == NetInfo.Direction.Forward && stopLane < drivingLane)
                     pathPosA.m_lane = (byte)segment.Info.m_sortedLanes[drivingLane + 1];
-
-                Log.Debug($"findpath: {pathPosA.m_segment}, dir:{dir}, lane:{pathPosA.m_lane}");
             }
         }
     }

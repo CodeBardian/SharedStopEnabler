@@ -1,5 +1,6 @@
 ﻿using ColossalFramework;
 using HarmonyLib;
+using SharedStopEnabler.StopSelection.AI;
 using SharedStopEnabler.Util;
 using System;
 using System.Collections.Generic;
@@ -11,12 +12,21 @@ namespace SharedStopEnabler.StopSelection.Patch
     [HarmonyPatch(typeof(TransportLineAI), "AddLaneConnection")]
     class TransportLineAIPatch_AddLaneConnection
     {
-        static bool Prefix(VehicleInfo.VehicleType ___m_vehicleType, ushort nodeID, ref NetNode data, uint laneID, byte offset)
+        static bool Prefix(NetLane.Flags ___m_stopFlag, VehicleInfo.VehicleType ___m_vehicleType, ushort nodeID, ref NetNode data, uint laneID, byte offset)
         {
             if (nodeID == 0 || !___m_vehicleType.IsSharedStopTransport()) return true;
 
             ushort segment = Singleton<NetManager>.instance.m_lanes.m_buffer[laneID].m_segment;
             ushort lineID = Singleton<NetManager>.instance.m_nodes.m_buffer[nodeID].m_transportLine;
+
+            if (Singleton<NetManager>.instance.m_segments.m_buffer[segment].Info.m_netAI is RoadBridgeAI roadBridgeAI)
+            {      
+                NetLane.Flags flags = (NetLane.Flags)Singleton<NetManager>.instance.m_lanes.m_buffer[laneID].m_flags;
+                flags |= ___m_stopFlag;
+                Singleton<NetManager>.instance.m_lanes.m_buffer[laneID].m_flags = (ushort)flags;
+                roadBridgeAI.UpdateSegmentStopFlags(segment, ref Singleton<NetManager>.instance.m_segments.m_buffer[segment]);
+            }
+
             Singleton<SharedStopsTool>.instance.AddSharedStop(segment, lineID, laneID);
 
             return true;

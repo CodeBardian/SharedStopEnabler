@@ -16,7 +16,7 @@ namespace SharedStopEnabler.StopSelection.Patch
     {
         static bool Prefix(ref bool __result, NetSegment __instance, Vector3 point, NetInfo.LaneType laneTypes, VehicleInfo.VehicleType vehicleTypes, ref bool requireConnect)
         {
-            if (requireConnect && vehicleTypes.IsSharedStopTransport() && __instance.Info.m_netAI is RoadBridgeAI)
+            if (requireConnect && __instance.Info.m_netAI is RoadBridgeAI)
             {
                 requireConnect = false;
             }

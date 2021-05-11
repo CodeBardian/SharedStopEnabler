@@ -87,20 +87,25 @@ namespace SharedStopEnabler.StopSelection
                 {
                     if (segment == null) continue;
 
-                    if (segment.m_lodMaterial.name.Contains("BusSide"))
+                    if (segment.m_forwardRequired == NetSegment.Flags.StopLeft && segment.m_backwardRequired == NetSegment.Flags.StopRight)
                     {
                         segment.m_backwardForbidden &= ~NetSegment.Flags.StopRight2;
                         segment.m_forwardForbidden &= ~NetSegment.Flags.StopLeft2;
                     }
-                    else if (segment.m_lodMaterial.name.Contains("TramAndBusStop"))
+                    else if (segment.m_forwardRequired == (NetSegment.Flags.StopRight | NetSegment.Flags.StopLeft2) && segment.m_backwardRequired == (NetSegment.Flags.StopLeft | NetSegment.Flags.StopRight2))
                     {
                         segment.m_backwardForbidden &= ~NetSegment.Flags.StopLeft2;
                         segment.m_forwardForbidden &= ~NetSegment.Flags.StopRight2;
                     }
-                    else if (segment.m_lodMaterial.name.Contains("BusBoth"))
+                    else if (segment.m_forwardRequired == NetSegment.Flags.StopBoth && segment.m_backwardRequired == NetSegment.Flags.StopBoth)
                     {
                         segment.m_backwardForbidden &= ~NetSegment.Flags.StopBoth2;
                         segment.m_forwardForbidden &= ~NetSegment.Flags.StopBoth2;
+                    }
+                    else if (segment.m_forwardRequired == NetSegment.Flags.StopBoth2 && segment.m_backwardRequired == NetSegment.Flags.StopBoth2 && netInfo.m_connectGroup != NetInfo.ConnectGroup.NarrowTram)
+                    {
+                        segment.m_backwardForbidden &= ~NetSegment.Flags.StopBoth;
+                        segment.m_forwardForbidden &= ~NetSegment.Flags.StopBoth;
                     }
                 }
 

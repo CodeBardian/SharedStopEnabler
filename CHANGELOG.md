@@ -1,5 +1,11 @@
 ## Changelog
 
+### [1.1.5] - 2021-05-12
+
+#### Fixed
+- missing textures on some road segments when creating shared stop
+- previously created shared stops sometimes wouldn't be recognized on loading save
+
 ### [1.1.4] - 2021-05-05
 
 #### Changed

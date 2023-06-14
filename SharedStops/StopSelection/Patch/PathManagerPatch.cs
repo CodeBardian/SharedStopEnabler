@@ -14,9 +14,9 @@ namespace SharedStopEnabler.StopSelection.Patch
     [HarmonyPatch("FindPathPosition")]
     [HarmonyPatch(
         new Type[] { typeof(Vector3), typeof(ItemClass.Service), typeof(ItemClass.Service), typeof(NetInfo.LaneType), typeof(VehicleInfo.VehicleType), typeof(VehicleInfo.VehicleCategory),
-            typeof(VehicleInfo.VehicleType), typeof(bool), typeof(bool), typeof(float), typeof(bool), typeof(PathUnit.Position), typeof(PathUnit.Position), typeof(float), typeof(float)},
+            typeof(VehicleInfo.VehicleType), typeof(bool), typeof(bool), typeof(float), typeof(bool), typeof(bool), typeof(PathUnit.Position), typeof(PathUnit.Position), typeof(float), typeof(float)},
         new ArgumentType[] { ArgumentType.Normal, ArgumentType.Normal, ArgumentType.Normal, ArgumentType.Normal, ArgumentType.Normal, ArgumentType.Normal, ArgumentType.Normal, ArgumentType.Normal,
-            ArgumentType.Normal, ArgumentType.Normal, ArgumentType.Normal, ArgumentType.Out, ArgumentType.Out, ArgumentType.Out, ArgumentType.Out})]
+            ArgumentType.Normal, ArgumentType.Normal, ArgumentType.Normal, ArgumentType.Normal, ArgumentType.Out, ArgumentType.Out, ArgumentType.Out, ArgumentType.Out})]
     class PathManagerPatch_FindPathPosition
     {
         static void Postfix(Vector3 position, ref PathUnit.Position pathPosA, VehicleInfo.VehicleType stopType, VehicleInfo.VehicleCategory vehicleCategory)

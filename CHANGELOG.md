@@ -1,5 +1,7 @@
 ## Changelog
 
+### [1.1.8] - 2023-03-23 - Compatibility update for patch 1.17.1-f2
+
 ### [1.1.7] - 2023-03-23 - Compatibility update Hubs & Transport
 
 ### [1.1.6] - 2022-09-22 - Compatibility update Plazas & Promenades
